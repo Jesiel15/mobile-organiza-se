@@ -12,7 +12,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterScreen() {
   const { width } = useWindowDimensions();
@@ -61,7 +61,7 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
-  
+
   return (
     <View style={[styles.container, isWide && styles.containerRow]}>
       {/* Painel ilustrativo */}
