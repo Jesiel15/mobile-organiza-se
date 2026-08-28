@@ -18,7 +18,7 @@ function InitialLayout() {
       router.replace("/(auth)/login");
     } else if (token && inAuthGroup) {
       // Autenticado tentando acessar tela de login/cadastro -> manda pra home
-      router.replace("/(screens)/home");
+      router.replace("/(screens)/(home)/home");
     }
   }, [token, isLoading, segments]);
 

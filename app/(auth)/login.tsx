@@ -34,7 +34,7 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await signIn(email, senha);
-      router.replace("/(screens)/home"); // Altere para a rota da sua tela Home
+      router.replace("/(screens)/(home)/home"); // Altere para a rota da sua tela Home
     } catch (error: any) {
       const message = error.response?.data?.msg || "Email ou senha incorretos.";
       Alert.alert("Falha no Login", message);
