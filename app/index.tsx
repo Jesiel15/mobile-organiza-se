@@ -1,6 +1,16 @@
+import { ActivityIndicator, View } from "react-native";
 
 export default function Index() {
-  // Tela neutra de entrada: o useEffect do _layout.tsx
-  // vai interceptar e redirecionar para /(auth)/login ou /(screens)/home
-  return null;
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
+      }}
+    >
+      <ActivityIndicator size="large" color="#2f7cf6" />
+    </View>
+  );
 }
