@@ -1,3 +1,4 @@
+import { styles } from "@/styles/register.styles";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useState } from "react";
@@ -5,12 +6,11 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  View,
+  View
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 
@@ -166,71 +166,3 @@ export default function RegisterScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  containerRow: { flexDirection: "row" },
-  panelFlex: { flex: 1 },
-  formPanel: {
-    flex: 1,
-    backgroundColor: "#0d0d0d",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-  },
-  formInner: { width: "100%", maxWidth: 340, alignSelf: "center" },
-  title: { color: "#fff", fontSize: 26, fontWeight: "700", marginBottom: 24 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#3a3a3a",
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#fff",
-    marginBottom: 14,
-  },
-  passwordWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#3a3a3a",
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 14,
-  },
-  passwordInput: { flex: 1, color: "#fff" },
-  smallText: { color: "#e5e5e5", fontSize: 13 },
-  link: { color: "#4f8ef7", fontSize: 13, fontWeight: "600" },
-  primaryButton: {
-    backgroundColor: "#2f7cf6",
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 6,
-    marginBottom: 20,
-  },
-  primaryButtonText: { color: "#fff", fontWeight: "700" },
-  footerRow: { flexDirection: "row", justifyContent: "center" },
-  illustrationPanel: {
-    backgroundColor: "#b9d3ea",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-  },
-  illustrationTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#1a1a1a",
-    marginBottom: 20,
-  },
-  iconBadge: {
-    width: 90,
-    height: 90,
-    borderRadius: 16,
-    backgroundColor: "#3a6ea5",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

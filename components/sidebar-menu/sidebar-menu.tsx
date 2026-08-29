@@ -1,17 +1,15 @@
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
+import { getSidebarStyles } from "@/styles/sidebar-menu.styles";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router"; // 👈 Importe o useRouter
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import React from "react";
 import {
-  Modal,
-  Platform,
   Text,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { styles } from "./sidebar-menu.styles";
 
 interface SidebarProps {
   activeScreen?: string;
@@ -20,12 +18,12 @@ interface SidebarProps {
 export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
   const { width } = useWindowDimensions();
   const { signOut } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter(); // 👈 Instancie o router
+  const { colors } = useTheme();
+  const styles = getSidebarStyles(colors);
+  const router = useRouter();
 
-  const isMobile = width < 768 || Platform.OS !== "web";
+  const isMobile = width < 768;
 
-  // Mapeie cada item com a sua rota correspondente na pasta (screens)
   const menuItems = [
     { label: "Início", icon: "home-outline", route: "/(screens)/(home)/home" },
     {
@@ -46,44 +44,31 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
   ];
 
   const handleNavigate = (route: string) => {
-    if (isMobile) setIsOpen(false);
-    router.push(route as any); // 👈 Faz a navegação para a tela clicada
+    router.push(route as any);
   };
 
-  const MenuContent = () => (
-    <View style={styles.sidebarInner}>
-      {/* Topo - Logo */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Ionicons name="folder-open" size={28} color="#fff" />
-          <Text style={styles.logoText}>Organiza-se</Text>
-        </View>
-        {isMobile && (
-          <TouchableOpacity onPress={() => setIsOpen(false)}>
-            <Ionicons name="close" size={28} color="#fff" />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.divider} />
-
-      {/* Lista de Navegação */}
-      <View style={styles.menuList}>
+  // ---------- MOBILE: menu inferior fixo ----------
+  if (isMobile) {
+    return (
+      <View style={styles.bottomBar}>
         {menuItems.map((item) => {
           const isActive = activeScreen === item.label;
           return (
             <TouchableOpacity
               key={item.label}
-              style={[styles.menuItem, isActive && styles.menuItemActive]}
-              onPress={() => handleNavigate(item.route)} // 👈 Chama a navegação
+              style={styles.bottomBarItem}
+              onPress={() => handleNavigate(item.route)}
             >
               <Ionicons
                 name={item.icon as any}
-                size={20}
-                color={isActive ? "#2f7cf6" : "#fff"}
+                size={22}
+                color={isActive ? colors.primary : colors.gray}
               />
               <Text
-                style={[styles.menuText, isActive && styles.menuTextActive]}
+                style={[
+                  styles.bottomBarText,
+                  isActive && styles.bottomBarTextActive,
+                ]}
               >
                 {item.label}
               </Text>
@@ -91,57 +76,66 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
           );
         })}
 
-        {/* Botão Sair */}
-        <TouchableOpacity style={styles.menuItem} onPress={signOut}>
-          <Ionicons name="warning-outline" size={20} color="#ff4d4f" />
-          <Text style={[styles.menuText, { color: "#ff4d4f" }]}>Sair</Text>
+        <TouchableOpacity style={styles.bottomBarItem} onPress={signOut}>
+          <Ionicons name="warning-outline" size={22} color={colors.red} />
+          <Text style={[styles.bottomBarText, { color: colors.red }]}>
+            Sair
+          </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Rodapé - Suporte */}
-      <View style={styles.footer}>
-        <View style={styles.divider} />
-        <TouchableOpacity style={styles.menuItem}>
-          <Ionicons name="call-outline" size={20} color="#fff" />
-          <Text style={styles.menuText}>Suporte</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  if (isMobile) {
-    return (
-      <SafeAreaView style={styles.mobileBar}>
-        <View style={styles.mobileHeader}>
-          <TouchableOpacity onPress={() => setIsOpen(true)}>
-            <Ionicons name="menu" size={30} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.mobileTitle}>Organiza-se</Text>
-        </View>
-
-        <Modal
-          visible={isOpen}
-          animationType="fade"
-          transparent
-          onRequestClose={() => setIsOpen(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.drawerContainer}>
-              <MenuContent />
-            </View>
-            <TouchableOpacity
-              style={styles.modalCloseArea}
-              onPress={() => setIsOpen(false)}
-            />
-          </View>
-        </Modal>
-      </SafeAreaView>
     );
   }
 
+  // ---------- DESKTOP/WEB: sidebar lateral fixo ----------
   return (
     <View style={styles.desktopSidebar}>
-      <MenuContent />
+      <View style={styles.sidebarInner}>
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Ionicons name="folder-open" size={28} color={colors.white} />
+            <Text style={styles.logoText}>Organiza-se</Text>
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.menuList}>
+          {menuItems.map((item) => {
+            const isActive = activeScreen === item.label;
+            return (
+              <TouchableOpacity
+                key={item.label}
+                style={[styles.menuItem, isActive && styles.menuItemActive]}
+                onPress={() => handleNavigate(item.route)}
+              >
+                <Ionicons
+                  name={item.icon as any}
+                  size={20}
+                  color={isActive ? colors.primary : colors.white}
+                />
+                <Text
+                  style={[styles.menuText, isActive && styles.menuTextActive]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+
+          <TouchableOpacity style={styles.menuItem} onPress={signOut}>
+            <Ionicons name="warning-outline" size={20} color={colors.red} />
+            <Text style={[styles.menuText, { color: colors.red }]}>Sair</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footer}>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.menuItem}>
+            <Ionicons name="call-outline" size={20} color={colors.white} />
+            <Text style={styles.menuText}>Suporte</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
