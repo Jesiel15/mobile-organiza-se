@@ -1,4 +1,4 @@
-import Sidebar from "@/components/sidebar-menu/sidebar-menu";
+import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";

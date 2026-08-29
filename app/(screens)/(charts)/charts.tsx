@@ -1,4 +1,4 @@
-import Sidebar from "@/components/sidebar-menu/sidebar-menu";
+import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { useTheme } from "@/context/ThemeContext";
 import { getChartsStyles } from "@/styles/charts.styles";
 import React from "react";
