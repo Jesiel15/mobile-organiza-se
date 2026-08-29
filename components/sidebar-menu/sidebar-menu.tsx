@@ -62,7 +62,7 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
               <Ionicons
                 name={item.icon as any}
                 size={22}
-                color={isActive ? colors.primary : colors.gray}
+                color={isActive ? colors.primary : colors.black}
               />
               <Text
                 style={[

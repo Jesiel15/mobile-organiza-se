@@ -72,7 +72,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
       left: 0,
       right: 0,
       flexDirection: "row",
-      backgroundColor: colors.black,
+      backgroundColor: colors.white,
       paddingTop: 8,
       paddingBottom: Platform.OS === "ios" ? 22 : 10,
       borderTopWidth: 1,
@@ -86,7 +86,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
     },
     bottomBarText: {
       fontSize: 11,
-      color: colors.gray,
+      color: colors.black,
       fontWeight: "500",
     },
     bottomBarTextActive: {
