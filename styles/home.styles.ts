@@ -11,7 +11,8 @@ export const getHomeStyles = (colors: ThemeColors, isMobile: boolean) =>
     content: {
       flex: 1,
       padding: 24,
-      paddingBottom: isMobile ? 90 : 24, // espaço pro menu inferior fixo
+      paddingBottom: isMobile ? 90 : 24,
+      paddingTop: isMobile ? 75 : 24,
     },
     title: {
       fontSize: 24,
