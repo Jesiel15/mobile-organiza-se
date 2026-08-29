@@ -9,7 +9,7 @@ export default function SettingsScreen() {
       <Sidebar activeScreen="Configurações" />
 
       <View style={styles.content}>
-        <Text style={styles.title}>Tela de Configuração ⚙</Text>
+        <Text style={styles.title}>Configuração ⚙</Text>
         <Text>Aqui terá configuração de Dark/Light Mode e conta.</Text>
       </View>
     </View>

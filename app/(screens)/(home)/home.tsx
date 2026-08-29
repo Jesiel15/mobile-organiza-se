@@ -12,8 +12,8 @@ export default function HomeScreen() {
       <Sidebar activeScreen="Início" />
 
       <View style={styles.content}>
-        <Text style={styles.title}>{user?.name} 📊</Text>
-        <Text>Seja bem-vindo de volta.</Text>
+        <Text>Olá,</Text>
+        <Text style={styles.title}>{user?.name}</Text>
       </View>
     </View>
   );

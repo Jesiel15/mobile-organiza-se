@@ -9,7 +9,7 @@ export default function CalendarScreen() {
       <Sidebar activeScreen="Calendário" />
 
       <View style={styles.content}>
-        <Text style={styles.title}>Tela de Calendário 📅</Text>
+        <Text style={styles.title}>Calendário 📅</Text>
         <Text>Aqui mostrára as datas no calendário.</Text>
       </View>
     </View>

@@ -9,7 +9,7 @@ export default function ChartsScreen() {
       <Sidebar activeScreen="Gráficos" />
 
       <View style={styles.content}>
-        <Text style={styles.title}>Tela de Gráficos 📊</Text>
+        <Text style={styles.title}>Gráficos 📊</Text>
         <Text>Aqui entrarão os relatórios e gráficos do sistema.</Text>
       </View>
     </View>
