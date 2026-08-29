@@ -7,17 +7,15 @@ function InitialLayout() {
   const { token, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-
   useEffect(() => {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const noSegments = !segments[0];
 
     if (!token && !inAuthGroup) {
-      // Sem token e tentando acessar rota protegida -> manda pro login
       router.replace("/(auth)/login");
-    } else if (token && inAuthGroup) {
-      // Autenticado tentando acessar tela de login/cadastro -> manda pra home
+    } else if (token && (inAuthGroup || noSegments)) {
       router.replace("/(screens)/(home)/home");
     }
   }, [token, isLoading, segments]);

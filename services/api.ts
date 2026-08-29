@@ -26,11 +26,24 @@ export const api = axios.create({
   },
 });
 
+function withTimeout<T>(promise: Promise<T>, ms = 3000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("AsyncStorage timeout")), ms)
+    ),
+  ]);
+}
+
 api.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await withTimeout(AsyncStorage.getItem("token"));
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.warn("Falha ao ler token, seguindo sem auth:", e);
     }
     return config;
   },

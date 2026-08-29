@@ -1,7 +1,7 @@
 import Sidebar from "@/components/sidebar-menu/sidebar-menu";
 import React from "react";
 import { Text, View } from "react-native";
-import { styles } from "./settings.styles";
+import { styles } from "../../../styles/settings.styles";
 
 export default function SettingsScreen() {
   return (

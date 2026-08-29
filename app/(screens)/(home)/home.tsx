@@ -1,8 +1,8 @@
 import Sidebar from "@/components/sidebar-menu/sidebar-menu";
 import React from "react";
 import { Button, Text, View } from "react-native";
-import { styles } from "../(home)/home.styles";
 import { useAuth } from "../../../context/AuthContext";
+import { styles } from "../../../styles/home.styles";
 
 export default function HomeScreen() {
   const { user, signOut } = useAuth();
