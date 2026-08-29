@@ -1,7 +1,7 @@
 import Sidebar from "@/components/sidebar-menu/sidebar-menu";
+import { styles } from "@/styles/charts.styles";
 import React from "react";
 import { Text, View } from "react-native";
-import { styles } from "../../../styles/charts.styles";
 
 export default function ChartsScreen() {
   return (
