@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { authColors } from "./colors";
+import { authColors } from "../constants/colors";
 
 export const styles = StyleSheet.create({
   container: { flex: 1 },

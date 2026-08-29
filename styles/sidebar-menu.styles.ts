@@ -1,12 +1,12 @@
 import { Platform, StyleSheet } from "react-native";
-import { ThemeColors } from "./colors";
+import { ThemeColors } from "../constants/colors";
 
 export const getSidebarStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     // ---------- DESKTOP SIDEBAR ----------
     desktopSidebar: {
       width: 220,
-      backgroundColor: colors.black,
+      backgroundColor: colors.white, //white
       height: "100%",
     },
     sidebarInner: {
@@ -26,7 +26,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
       gap: 8,
     },
     logoText: {
-      color: colors.white,
+      color: colors.primary,
       fontSize: 16,
       fontWeight: "700",
     },
@@ -53,7 +53,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
       backgroundColor: colors.skyBlueSuave,
     },
     menuText: {
-      color: colors.white,
+      color: colors.black,
       fontSize: 14,
       fontWeight: "500",
     },

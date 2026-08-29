@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { ThemeColors } from "./colors";
+import { ThemeColors } from "../constants/colors";
 
 export const getHomeStyles = (colors: ThemeColors, isMobile: boolean) =>
   StyleSheet.create({

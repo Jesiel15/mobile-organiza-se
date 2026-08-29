@@ -92,7 +92,7 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
       <View style={styles.sidebarInner}>
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Ionicons name="folder-open" size={28} color={colors.white} />
+            <Ionicons name="folder-open" size={28} color={colors.primary} />
             <Text style={styles.logoText}>Organiza-se</Text>
           </View>
         </View>
@@ -111,7 +111,7 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
                 <Ionicons
                   name={item.icon as any}
                   size={20}
-                  color={isActive ? colors.primary : colors.white}
+                  color={isActive ? colors.primary : colors.black}
                 />
                 <Text
                   style={[styles.menuText, isActive && styles.menuTextActive]}

@@ -1,4 +1,4 @@
-import { ThemeColors, ThemeName, themes } from "@/styles/colors";
+import { ThemeColors, ThemeName, themes } from "@/constants/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
