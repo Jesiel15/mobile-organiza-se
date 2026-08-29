@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 
 function InitialLayout() {
   const { token, isLoading } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isThemeLoading } = useTheme();
   const segments = useSegments();
   const router = useRouter();
 
@@ -38,6 +38,21 @@ function InitialLayout() {
     );
   }
 
+  if (isLoading || isThemeLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: colors.backgroundHome,
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+  
   return <Slot />;
 }
 
