@@ -1,91 +1,185 @@
+import { ThemeColors } from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: "100%",
-  },
-  loader: {
-    marginVertical: 10,
-  },
-  listsWrapper: {
-    flex: 1,
-    gap: 24,
-  },
-  cardSection: {
-    borderRadius: 12,
-    padding: 16,
-    // Sombras para iOS e Web
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    // Sombra para Android
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
-  addButton: {
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#D0D5DD",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 6,
-    paddingVertical: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F2F4F7",
-    gap: 12,
-  },
-  paidItem: {
-    opacity: 0.6,
-  },
-  paidText: {
-    textDecorationLine: "line-through",
-    color: "#98A2B3",
-  },
-  iconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 8, // Bordas levemente arredondadas idênticas às da imagem
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  itemDetails: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  itemName: {
-    fontWeight: "600",
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  itemDate: {
-    fontSize: 12,
-    color: "#667085",
-    marginTop: 2,
-  },
-  itemAmount: {
-    fontWeight: "600",
-    fontSize: 14,
-    marginRight: 8,
-  },
-  negativeAmount: {
-    color: "#F04438",
-  },
-  actionsRow: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-  },
-});
+export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: colors.backgroundHome,
+    },
+    loader: {
+      marginVertical: 10,
+    },
+    filterContainer: {
+      marginBottom: 20,
+      position: "relative",
+      zIndex: 999,
+    },
+    filterLabel: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textColor,
+      marginBottom: 8,
+    },
+    customPickerTrigger: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: colors.surface,
+      // borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      height: 42,
+      width: 230,
+    },
+    customPickerText: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: colors.textColor,
+      textTransform: "capitalize",
+    },
+    popoverCard: {
+      position: "absolute",
+      top: 76,
+      left: 0,
+      width: 260,
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      padding: 16,
+      zIndex: 1000,
+    },
+    popoverHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 16,
+    },
+    arrowButton: {
+      padding: 4,
+    },
+    popoverYearText: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: colors.textColor,
+    },
+    monthsGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "space-between",
+    },
+    monthGridItem: {
+      width: "22%",
+      height: 36,
+      borderRadius: 8,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.backgroundHome,
+    },
+    monthGridItemSelected: {
+      backgroundColor: colors.skyBlueSuave,
+      // borderWidth: 1,
+      borderColor: colors.primary,
+    },
+    monthGridText: {
+      fontSize: 13,
+      fontWeight: "500",
+      color: colors.textColor,
+      textTransform: "lowercase",
+    },
+    monthGridTextSelected: {
+      color: colors.primary,
+      fontWeight: "700",
+    },
+    popoverFooter: {
+      marginTop: 16,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.surfaceBorder,
+      alignItems: "flex-end",
+    },
+    footerActionText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: colors.primary,
+    },
+    listsWrapper: {
+      flexDirection: isMobile ? "column" : "row",
+      gap: 20,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: "700",
+      color: colors.textColor,
+      marginBottom: 12,
+    },
+    cardSection: {
+      borderRadius: 12,
+      padding: 16,
+      // borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      backgroundColor: colors.surface,
+    },
+    addButton: {
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: colors.surfaceBorder,
+      borderRadius: 8,
+      height: 40,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    addButtonText: {
+      color: colors.gray,
+      fontWeight: "500",
+      fontSize: 13,
+    },
+    itemRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.surfaceBorder,
+      gap: 12,
+    },
+    iconBox: {
+      width: 32,
+      height: 32,
+      borderRadius: 8,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    itemDetails: {
+      flex: 1,
+    },
+    itemName: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: colors.textColor,
+    },
+    itemDate: {
+      fontSize: 12,
+      color: colors.gray,
+      marginTop: 2,
+    },
+    itemAmount: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textColor,
+    },
+    paidText: {
+      textDecorationLine: "line-through",
+      color: colors.gray,
+    },
+    actionsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      marginLeft: 8,
+    },
+  });

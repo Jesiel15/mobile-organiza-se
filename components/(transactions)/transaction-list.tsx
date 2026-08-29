@@ -1,6 +1,3 @@
-import { useTheme } from "@/context/ThemeContext";
-import { api } from "@/services/api";
-import { styles } from "@/styles/(components)/transactions-lists.styles";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useState } from "react";
@@ -13,6 +10,10 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+
+import { useTheme } from "@/context/ThemeContext";
+import { api } from "@/services/api";
+import { getTransactionsStyles } from "@/styles/(components)/transactions-lists.styles";
 
 export interface Expense {
   id: string;
@@ -40,6 +41,21 @@ interface TransactionsListProps {
   onNavigateToEditRevenue?: (monthYear: string, id: string) => void;
 }
 
+const MONTHS_LIST = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
+
 export default function TransactionsList({
   onNavigateToAddExpense,
   onNavigateToAddRevenue,
@@ -49,13 +65,17 @@ export default function TransactionsList({
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
+  const styles = getTransactionsStyles(colors, isMobile);
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [revenues, setRevenues] = useState<Revenue[]>([]);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [allRevenues, setAllRevenues] = useState<Revenue[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Estados do Filtro de Data e Popover
   const [monthYearFilter, setMonthYearFilter] = useState<Date>(new Date());
+  const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
 
   const getMonthYearKey = (date: Date): string => {
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -75,27 +95,19 @@ export default function TransactionsList({
     return d.toLocaleDateString("pt-BR");
   };
 
-  /**
-   * Helper para sanitizar nomes de ícones legados (PrimeNG/Outros -> Ionicons)
-   */
   const getValidIconName = (
     iconName?: string,
     defaultIcon: keyof typeof Ionicons.glyphMap = "cash-outline"
   ): keyof typeof Ionicons.glyphMap => {
     if (!iconName) return defaultIcon;
 
-    // Limpa prefixos 'pi' ou 'pi-' caso existam
     const cleanName = iconName.replace(/^pi\s+pi-|^pi-/, "").trim();
 
-    // Dicionário de tradução de ícones legados/inválidos para Ionicons válidos
     const map: Record<string, keyof typeof Ionicons.glyphMap> = {
-      // Correções para os alertas atuais:
       tablet: "tablet-portrait-outline",
       "heart-fill": "heart",
       "credit-card": "card-outline",
       user: "person-outline",
-
-      // Outros ícones comuns do PrimeNG / FontAwesome:
       dollar: "cash-outline",
       "money-bill": "cash-outline",
       wallet: "wallet-outline",
@@ -113,29 +125,7 @@ export default function TransactionsList({
     };
 
     const resolved = map[cleanName] || cleanName;
-
-    // Validação final de segurança para evitar que uma string inválida passe
-    const validIonicons = [
-      "tablet-portrait-outline",
-      "heart",
-      "card-outline",
-      "person-outline",
-      "cash-outline",
-      "wallet-outline",
-      "receipt-outline",
-      "barcode-outline",
-      "people-outline",
-      "briefcase-outline",
-      "business-outline",
-      "home-outline",
-      "car-outline",
-      "call-outline",
-      "gift-outline",
-      "star-outline",
-      "heart-outline",
-    ];
-
-    return validIonicons.includes(resolved)
+    return (Ionicons.glyphMap as any)[resolved]
       ? (resolved as keyof typeof Ionicons.glyphMap)
       : defaultIcon;
   };
@@ -359,6 +349,29 @@ export default function TransactionsList({
     );
   };
 
+  // Lógicas do Popover Customizado
+  const currentSelectedMonth = monthYearFilter.getMonth();
+  const currentSelectedYear = monthYearFilter.getFullYear();
+
+  const handleSelectMonth = (monthIndex: number) => {
+    const updatedDate = new Date(monthYearFilter);
+    updatedDate.setMonth(monthIndex);
+    setMonthYearFilter(updatedDate);
+    setShowMonthPicker(false);
+  };
+
+  const handleYearChange = (delta: number) => {
+    const updatedDate = new Date(monthYearFilter);
+    updatedDate.setFullYear(updatedDate.getFullYear() + delta);
+    setMonthYearFilter(updatedDate);
+  };
+
+  const handleSetCurrentMonth = () => {
+    const now = new Date();
+    setMonthYearFilter(new Date(now.getFullYear(), now.getMonth(), 1));
+    setShowMonthPicker(false);
+  };
+
   return (
     <View style={styles.container}>
       {isLoading && (
@@ -369,36 +382,94 @@ export default function TransactionsList({
         />
       )}
 
-      <View
-        style={[
-          styles.listsWrapper,
-          { flexDirection: isMobile ? "column" : "row" },
-        ]}
-      >
+      {/* Seletor Customizado de Mês/Ano */}
+      <View style={styles.filterContainer}>
+        <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
+
+        <TouchableOpacity
+          style={styles.customPickerTrigger}
+          activeOpacity={0.7}
+          onPress={() => setShowMonthPicker((prev) => !prev)}
+        >
+          <Text style={styles.customPickerText}>
+            {monthYearFilter.toLocaleDateString("pt-BR", {
+              month: "long",
+              year: "numeric",
+            })}
+          </Text>
+          <Ionicons name="calendar-outline" size={18} color={colors.gray} />
+        </TouchableOpacity>
+
+        {showMonthPicker && (
+          <View style={styles.popoverCard}>
+            <View style={styles.popoverHeader}>
+              <TouchableOpacity
+                onPress={() => handleYearChange(-1)}
+                style={styles.arrowButton}
+              >
+                <Ionicons name="chevron-back" size={18} color={colors.gray} />
+              </TouchableOpacity>
+              <Text style={styles.popoverYearText}>{currentSelectedYear}</Text>
+              <TouchableOpacity
+                onPress={() => handleYearChange(1)}
+                style={styles.arrowButton}
+              >
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={colors.gray}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.monthsGrid}>
+              {MONTHS_LIST.map((monthName, index) => {
+                const isSelected = index === currentSelectedMonth;
+                return (
+                  <TouchableOpacity
+                    key={monthName}
+                    style={[
+                      styles.monthGridItem,
+                      isSelected && styles.monthGridItemSelected,
+                    ]}
+                    onPress={() => handleSelectMonth(index)}
+                  >
+                    <Text
+                      style={[
+                        styles.monthGridText,
+                        isSelected && styles.monthGridTextSelected,
+                      ]}
+                    >
+                      {monthName}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={styles.popoverFooter}>
+              <TouchableOpacity onPress={handleSetCurrentMonth}>
+                <Text style={styles.footerActionText}>Este mês</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.listsWrapper}>
         {/* Bloco de Despesas */}
         <View style={{ flex: 1 }}>
-          <Text style={[styles.sectionTitle, { color: colors.textColor }]}>
-            Despesas
-          </Text>
+          <Text style={styles.sectionTitle}>Despesas</Text>
 
-          <View
-            style={[
-              styles.cardSection,
-              { backgroundColor: colors.white || "#FFFFFF" },
-            ]}
-          >
+          <View style={styles.cardSection}>
             <TouchableOpacity
-              style={[styles.addButton, { borderColor: "#D0D5DD" }]}
+              style={styles.addButton}
               onPress={() => {
                 saveFilterState();
                 onNavigateToAddExpense?.();
               }}
             >
-              <Text
-                style={{ color: "#475467", fontWeight: "500", fontSize: 13 }}
-              >
-                Adicionar despesa
-              </Text>
+              <Text style={styles.addButtonText}>Adicionar despesa</Text>
             </TouchableOpacity>
 
             <FlatList
@@ -412,14 +483,14 @@ export default function TransactionsList({
                     <Ionicons
                       name={item.isPaid ? "checkbox" : "square-outline"}
                       size={20}
-                      color={item.isPaid ? "#98A2B3" : "#D0D5DD"}
+                      color={item.isPaid ? colors.gray : colors.surfaceBorder}
                     />
                   </TouchableOpacity>
 
                   <View
                     style={[
                       styles.iconBox,
-                      { backgroundColor: item.color || "#6172F3" },
+                      { backgroundColor: item.color || colors.primary },
                     ]}
                   >
                     <Ionicons
@@ -431,11 +502,7 @@ export default function TransactionsList({
 
                   <View style={styles.itemDetails}>
                     <Text
-                      style={[
-                        styles.itemName,
-                        { color: colors.textColor },
-                        item.isPaid && styles.paidText,
-                      ]}
+                      style={[styles.itemName, item.isPaid && styles.paidText]}
                       numberOfLines={1}
                     >
                       {item.nameExpense}
@@ -446,11 +513,7 @@ export default function TransactionsList({
                   </View>
 
                   <Text
-                    style={[
-                      styles.itemAmount,
-                      { color: colors.textColor },
-                      item.isPaid && styles.paidText,
-                    ]}
+                    style={[styles.itemAmount, item.isPaid && styles.paidText]}
                   >
                     {formatCurrency(item.valueExpense)}
                   </Text>
@@ -460,7 +523,7 @@ export default function TransactionsList({
                       <Ionicons
                         name="create-outline"
                         size={18}
-                        color="#667085"
+                        color={colors.gray}
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -478,7 +541,7 @@ export default function TransactionsList({
                       <Ionicons
                         name="arrow-forward-outline"
                         size={18}
-                        color="#2E90FA"
+                        color={colors.primary}
                       />
                     </TouchableOpacity>
                   </View>
@@ -490,28 +553,17 @@ export default function TransactionsList({
 
         {/* Bloco de Receitas */}
         <View style={{ flex: 1 }}>
-          <Text style={[styles.sectionTitle, { color: colors.textColor }]}>
-            Receitas/Salários
-          </Text>
+          <Text style={styles.sectionTitle}>Receitas/Salários</Text>
 
-          <View
-            style={[
-              styles.cardSection,
-              { backgroundColor: colors.white || "#FFFFFF" },
-            ]}
-          >
+          <View style={styles.cardSection}>
             <TouchableOpacity
-              style={[styles.addButton, { borderColor: "#D0D5DD" }]}
+              style={styles.addButton}
               onPress={() => {
                 saveFilterState();
                 onNavigateToAddRevenue?.();
               }}
             >
-              <Text
-                style={{ color: "#475467", fontWeight: "500", fontSize: 13 }}
-              >
-                Adicionar receita
-              </Text>
+              <Text style={styles.addButtonText}>Adicionar receita</Text>
             </TouchableOpacity>
 
             <FlatList
@@ -533,10 +585,7 @@ export default function TransactionsList({
                   </View>
 
                   <View style={styles.itemDetails}>
-                    <Text
-                      style={[styles.itemName, { color: colors.textColor }]}
-                      numberOfLines={1}
-                    >
+                    <Text style={styles.itemName} numberOfLines={1}>
                       {item.nameRevenue}
                     </Text>
                     <Text style={styles.itemDate}>
@@ -544,9 +593,7 @@ export default function TransactionsList({
                     </Text>
                   </View>
 
-                  <Text
-                    style={[styles.itemAmount, { color: colors.textColor }]}
-                  >
+                  <Text style={styles.itemAmount}>
                     {formatCurrency(item.valueRevenue)}
                   </Text>
 
@@ -555,7 +602,7 @@ export default function TransactionsList({
                       <Ionicons
                         name="create-outline"
                         size={18}
-                        color="#667085"
+                        color={colors.gray}
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -573,7 +620,7 @@ export default function TransactionsList({
                       <Ionicons
                         name="arrow-forward-outline"
                         size={18}
-                        color="#2E90FA"
+                        color={colors.primary}
                       />
                     </TouchableOpacity>
                   </View>

@@ -21,6 +21,7 @@ export default function HomeScreen() {
         <Text style={{ color: colors.textColor }}>Olá,</Text>
         <Text style={styles.title}>{user?.name}</Text>
 
+
         {/* Componente de Transações */}
         <TransactionsList
           onNavigateToAddExpense={() => console.log("Navegar para Add Despesa")}
