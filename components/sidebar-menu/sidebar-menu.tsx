@@ -5,12 +5,12 @@ import React, { useState } from "react";
 import {
   Modal,
   Platform,
-  SafeAreaView,
   Text,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "./sidebar-menu.styles";
 
 interface SidebarProps {
