@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  ScrollView,
   Text,
   TouchableOpacity,
   useWindowDimensions,
@@ -73,7 +74,6 @@ export default function TransactionsList({
   const [allRevenues, setAllRevenues] = useState<Revenue[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Estados do Filtro de Data e Popover
   const [monthYearFilter, setMonthYearFilter] = useState<Date>(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
 
@@ -100,9 +100,7 @@ export default function TransactionsList({
     defaultIcon: keyof typeof Ionicons.glyphMap = "cash-outline"
   ): keyof typeof Ionicons.glyphMap => {
     if (!iconName) return defaultIcon;
-
     const cleanName = iconName.replace(/^pi\s+pi-|^pi-/, "").trim();
-
     const map: Record<string, keyof typeof Ionicons.glyphMap> = {
       tablet: "tablet-portrait-outline",
       "heart-fill": "heart",
@@ -215,7 +213,6 @@ export default function TransactionsList({
 
   const toggleExpensePaidStatus = async (expense: Expense) => {
     const updatedPaidStatus = !expense.isPaid;
-
     setExpenses((prev) =>
       prev.map((item) =>
         item.id === expense.id ? { ...item, isPaid: updatedPaidStatus } : item
@@ -349,7 +346,6 @@ export default function TransactionsList({
     );
   };
 
-  // Lógicas do Popover Customizado
   const currentSelectedMonth = monthYearFilter.getMonth();
   const currentSelectedYear = monthYearFilter.getFullYear();
 
@@ -373,7 +369,11 @@ export default function TransactionsList({
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       {isLoading && (
         <ActivityIndicator
           size="large"
@@ -458,7 +458,7 @@ export default function TransactionsList({
 
       <View style={styles.listsWrapper}>
         {/* Bloco de Despesas */}
-        <View style={{ flex: 1 }}>
+        <View style={styles.columnContainer}>
           <Text style={styles.sectionTitle}>Despesas</Text>
 
           <View style={styles.cardSection}>
@@ -475,6 +475,7 @@ export default function TransactionsList({
             <FlatList
               data={expenses}
               keyExtractor={(item) => item.id}
+              scrollEnabled={false}
               renderItem={({ item }) => (
                 <View style={styles.itemRow}>
                   <TouchableOpacity
@@ -522,7 +523,7 @@ export default function TransactionsList({
                     <TouchableOpacity onPress={() => handleEditExpense(item)}>
                       <Ionicons
                         name="create-outline"
-                        size={18}
+                        size={16}
                         color={colors.gray}
                       />
                     </TouchableOpacity>
@@ -531,7 +532,7 @@ export default function TransactionsList({
                     >
                       <Ionicons
                         name="remove-circle-outline"
-                        size={18}
+                        size={16}
                         color="#F04438"
                       />
                     </TouchableOpacity>
@@ -540,7 +541,7 @@ export default function TransactionsList({
                     >
                       <Ionicons
                         name="arrow-forward-outline"
-                        size={18}
+                        size={16}
                         color={colors.primary}
                       />
                     </TouchableOpacity>
@@ -552,7 +553,7 @@ export default function TransactionsList({
         </View>
 
         {/* Bloco de Receitas */}
-        <View style={{ flex: 1 }}>
+        <View style={styles.columnContainer}>
           <Text style={styles.sectionTitle}>Receitas/Salários</Text>
 
           <View style={styles.cardSection}>
@@ -569,6 +570,7 @@ export default function TransactionsList({
             <FlatList
               data={revenues}
               keyExtractor={(item) => item.id}
+              scrollEnabled={false}
               renderItem={({ item }) => (
                 <View style={styles.itemRow}>
                   <View
@@ -601,7 +603,7 @@ export default function TransactionsList({
                     <TouchableOpacity onPress={() => handleEditRevenue(item)}>
                       <Ionicons
                         name="create-outline"
-                        size={18}
+                        size={16}
                         color={colors.gray}
                       />
                     </TouchableOpacity>
@@ -610,7 +612,7 @@ export default function TransactionsList({
                     >
                       <Ionicons
                         name="remove-circle-outline"
-                        size={18}
+                        size={16}
                         color="#F04438"
                       />
                     </TouchableOpacity>
@@ -619,7 +621,7 @@ export default function TransactionsList({
                     >
                       <Ionicons
                         name="arrow-forward-outline"
-                        size={18}
+                        size={16}
                         color={colors.primary}
                       />
                     </TouchableOpacity>
@@ -630,6 +632,6 @@ export default function TransactionsList({
           </View>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
