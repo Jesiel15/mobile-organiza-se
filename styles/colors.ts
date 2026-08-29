@@ -2,7 +2,42 @@
 // Espelha as CSS variables usadas no frontend Angular (styles.css),
 // pra manter os dois projetos com a mesma identidade visual.
 
-export const lightColors = {
+export interface ThemeColors {
+  // Brand colours
+  red: string;
+  redSuave: string;
+  purple: string;
+  green: string;
+  blue: string;
+  pink: string;
+  lilac: string;
+  neonGreen: string;
+  skyBlueSuave: string;
+  skyBlue: string;
+  calendario: string;
+
+  // Base colours
+  white: string;
+  black: string;
+  yellow: string;
+  gray: string;
+  background: string;
+  backgroundHome: string;
+
+  // Aura / componentes
+  primary: string;
+  primaryHover: string;
+  primaryActive: string;
+  textColor: string;
+  surface: string;
+  surfaceBorder: string;
+
+  // Linhas de listas (despesas/receitas)
+  lineColor: string;
+  scrollColor: string;
+}
+
+export const lightColors: ThemeColors = {
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -35,9 +70,9 @@ export const lightColors = {
   // Linhas de listas (despesas/receitas)
   lineColor: "#cecece",
   scrollColor: "#cecece",
-} as const;
+};
 
-export const darkColors = {
+export const darkColors: ThemeColors = {
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -70,9 +105,8 @@ export const darkColors = {
   // Linhas de listas (despesas/receitas)
   lineColor: "#747474",
   scrollColor: "#747474",
-} as const;
+};
 
-export type ThemeColors = typeof lightColors;
 export type ThemeName = "light" | "dark";
 
 export const themes: Record<ThemeName, ThemeColors> = {
