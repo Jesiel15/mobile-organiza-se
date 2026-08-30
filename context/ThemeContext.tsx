@@ -1,5 +1,6 @@
 import { ThemeColors, ThemeName, themes } from "@/constants/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StatusBar } from "expo-status-bar";
 import React, {
   createContext,
   useContext,
@@ -64,6 +65,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     <ThemeContext.Provider
       value={{ theme, colors, isThemeLoading, setTheme, toggleTheme }}
     >
+      <StatusBar
+        style={theme === "light" ? "dark" : "light"}
+        backgroundColor={colors.backgroundHome}
+      />
       {children}
     </ThemeContext.Provider>
   );
