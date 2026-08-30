@@ -6,7 +6,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
     // ---------- DESKTOP SIDEBAR ----------
     desktopSidebar: {
       width: 220,
-      backgroundColor: colors.white, //white
+      backgroundColor: colors.white,
       height: "100%",
       boxShadow: [
         {
@@ -25,19 +25,26 @@ export const getSidebarStyles = (colors: ThemeColors) =>
     header: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "flex-start",
       paddingHorizontal: 16,
       paddingVertical: 18,
     },
     logoContainer: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "center",
       gap: 8,
+    },
+    logoImage: {
+      width: 52,
+      height: 52,
+      marginTop: 14,
     },
     logoText: {
       color: colors.primary,
-      fontSize: 16,
+      fontSize: 22,
       fontWeight: "700",
+      includeFontPadding: false,
     },
     divider: {
       height: 1,

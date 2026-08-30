@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Image,
   Text,
   TouchableOpacity,
   useWindowDimensions,
@@ -92,7 +93,11 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
       <View style={styles.sidebarInner}>
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Ionicons name="folder-open" size={28} color={colors.primary} />
+            <Image
+              source={require("../../assets/(images)/logo.png")} // Ajuste os '../' de acordo com a pasta atual do arquivo
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
             <Text style={styles.logoText}>Organiza-se</Text>
           </View>
         </View>
