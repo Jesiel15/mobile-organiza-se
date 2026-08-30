@@ -10,9 +10,9 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
     },
     content: {
       flex: 1,
-      padding: 24,
+      padding: isMobile ? 14 : 24,
       paddingBottom: isMobile ? 90 : 24,
-      paddingTop: isMobile ? 75 : 24,
+      paddingTop: isMobile ? 64 : 24,
     },
     title: {
       fontSize: 24,
