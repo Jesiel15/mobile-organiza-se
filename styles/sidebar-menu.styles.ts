@@ -8,6 +8,15 @@ export const getSidebarStyles = (colors: ThemeColors) =>
       width: 220,
       backgroundColor: colors.white, //white
       height: "100%",
+      boxShadow: [
+        {
+          offsetX: 2,
+          offsetY: 4,
+          blurRadius: 4,
+          spreadDistance: 0,
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      ],
     },
     sidebarInner: {
       flex: 1,

@@ -37,6 +37,15 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       paddingHorizontal: 14,
       height: 48,
       width: isMobile ? "100%" : 360,
+      boxShadow: [
+        {
+          offsetX: 2,
+          offsetY: 4,
+          blurRadius: 4,
+          spreadDistance: 0,
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      ],
     },
     customPickerText: {
       fontSize: 16,
@@ -132,6 +141,15 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       // borderWidth: 1,
       borderColor: colors?.surfaceBorder || "#EAECF0",
       backgroundColor: colors?.surface || "#FFFFFF",
+      boxShadow: [
+        {
+          offsetX: 2,
+          offsetY: 4,
+          blurRadius: 4,
+          spreadDistance: 0,
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      ],
     },
     addButton: {
       borderWidth: 1,
