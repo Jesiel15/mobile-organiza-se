@@ -1,5 +1,5 @@
-import { ThemeColors } from "@/constants/colors";
 import { StyleSheet } from "react-native";
+import { ThemeColors } from "../../constants/colors";
 
 export const getExpenseFormStyles = (colors: ThemeColors, isMobile: boolean) =>
   StyleSheet.create({
@@ -93,8 +93,10 @@ export const getExpenseFormStyles = (colors: ThemeColors, isMobile: boolean) =>
       borderColor: colors.textColor,
     },
     input: {
-      backgroundColor: "#FFFFFF",
-      color: "#000000",
+      backgroundColor: colors.surface,
+      color: colors.textColor,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
       paddingHorizontal: 16,
       paddingVertical: 12,
       borderRadius: 6,
@@ -122,7 +124,7 @@ export const getExpenseFormStyles = (colors: ThemeColors, isMobile: boolean) =>
       justifyContent: "center",
     },
     btnSave: {
-      backgroundColor: colors.neonGreen,
+      backgroundColor: colors.green,
     },
     btnCancel: {
       backgroundColor: colors.red,
@@ -174,6 +176,10 @@ export const getExpenseFormStyles = (colors: ThemeColors, isMobile: boolean) =>
       justifyContent: "center",
       alignItems: "center",
       backgroundColor: colors.backgroundHome,
+    },
+    iconTileSelected: {
+      borderColor: colors.primary,
+      borderWidth: 2,
     },
     modalCancelBtn: {
       backgroundColor: colors.red,

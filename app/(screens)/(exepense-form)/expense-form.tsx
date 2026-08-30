@@ -1,4 +1,7 @@
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
+import { ListIcons } from "@/constants/list-icons";
+
+import { getPaletteColors } from "@/constants/palette-colors";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 import { getExpenseFormStyles } from "@/styles/(components)/expense-form.styles";
@@ -16,82 +19,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-
-const AVAILABLE_ICONS = [
-  "call-outline",
-  "wallet-outline",
-  "card-outline",
-  "cart-outline",
-  "car-outline",
-  "home-outline",
-  "receipt-outline",
-  "barcode-outline",
-  "bag-handle-outline",
-  "gift-outline",
-  "cash-outline",
-  "school-outline",
-  "wifi-outline",
-  "person-outline",
-  "people-outline",
-  "tv-outline",
-  "notifications-outline",
-  "camera-outline",
-  "ticket-outline",
-  "calendar-outline",
-  "briefcase-outline",
-  "trash-outline",
-  "basket-outline",
-  "grid-outline",
-  "business-outline",
-  "bus-outline",
-  "speedometer-outline",
-  "pricetag-outline",
-  "location-outline",
-  "videocam-outline",
-  "mic-outline",
-  "headset-outline",
-  "sparkles-outline",
-  "pencil-outline",
-  "star-outline",
-  "heart-outline",
-  "bookmark-outline",
-  "document-text-outline",
-  "trophy-outline",
-  "flash-outline",
-  "cube-outline",
-  "stats-chart-outline",
-  "link-outline",
-  "paperclip-outline",
-  "cloud-outline",
-  "lock-closed-outline",
-  "bulb-outline",
-  "folder-outline",
-  "checkmark-outline",
-  "chatbubble-outline",
-  "open-outline",
-  "globe-outline",
-  "refresh-outline",
-  "download-outline",
-  "search-outline",
-  "add-circle-outline",
-  "remove-circle-outline",
-  "mail-outline",
-  "compass-outline",
-  "color-palette-outline",
-] as const;
-
-const PALETTE_COLORS = [
-  "#FF0000",
-  "#FF4500",
-  "#FF8C00",
-  "#FFD700",
-  "#48BB78",
-  "#4299E1",
-  "#3182CE",
-  "#6B46C1",
-  "#ED64A6",
-  "#A0AEC0",
-];
 
 export default function FormExpenseScreen() {
   const router = useRouter();
@@ -114,8 +41,9 @@ export default function FormExpenseScreen() {
   const currentId = expenseId || revenueId;
   const isEditing = Boolean(monthYear && currentId);
 
-  // Tema e Responsividade
+  // Tema, Paleta e Responsividade
   const { colors } = useTheme();
+  const paletteColors = getPaletteColors(colors);
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const styles = getExpenseFormStyles(colors, isMobile);
@@ -128,7 +56,7 @@ export default function FormExpenseScreen() {
   const [valueExpense, setValueExpense] = useState("");
   const [displayDate, setDisplayDate] = useState("");
   const [anotation, setAnotation] = useState("");
-  const [color, setColor] = useState("#FF0000");
+  const [color, setColor] = useState(colors.red);
   const [icon, setIcon] = useState<string>("barcode-outline");
 
   // Modais / Popovers
@@ -155,7 +83,7 @@ export default function FormExpenseScreen() {
     setValueExpense("");
     setDisplayDate(new Date().toLocaleDateString("pt-BR"));
     setAnotation("");
-    setColor("#FF0000");
+    setColor(colors.red);
     setIcon("barcode-outline");
   };
 
@@ -183,7 +111,7 @@ export default function FormExpenseScreen() {
       }
 
       setAnotation(expense.anotation || "");
-      setColor(expense.color || "#FF0000");
+      setColor(expense.color || colors.red);
       setIcon(expense.icon || "barcode-outline");
     } catch (error) {
       console.error("Erro ao carregar despesa:", error);
@@ -308,20 +236,25 @@ export default function FormExpenseScreen() {
               <View style={styles.colorPickerContainer}>
                 <Text style={styles.colorPickerTitle}>Escolha uma cor:</Text>
                 <View style={styles.paletteGrid}>
-                  {PALETTE_COLORS.map((c) => (
-                    <TouchableOpacity
-                      key={c}
-                      style={[
-                        styles.paletteCircle,
-                        { backgroundColor: c },
-                        color === c && styles.paletteCircleSelected,
-                      ]}
-                      onPress={() => {
-                        setColor(c);
-                        setShowColorPicker(false);
-                      }}
-                    />
-                  ))}
+                  {paletteColors.map((c) => {
+                    const isSelected =
+                      color?.toLowerCase() === c?.toLowerCase();
+
+                    return (
+                      <TouchableOpacity
+                        key={c}
+                        style={[
+                          styles.paletteCircle,
+                          { backgroundColor: c },
+                          isSelected && styles.paletteCircleSelected,
+                        ]}
+                        onPress={() => {
+                          setColor(c);
+                          setShowColorPicker(false);
+                        }}
+                      />
+                    );
+                  })}
                 </View>
               </View>
             )}
@@ -329,7 +262,7 @@ export default function FormExpenseScreen() {
             {/* Campos de Texto */}
             <TextInput
               placeholder="Nome da despesa"
-              placeholderTextColor="#A0AEC0"
+              placeholderTextColor={colors.gray}
               value={nameExpense}
               onChangeText={setNameExpense}
               style={styles.input}
@@ -337,7 +270,7 @@ export default function FormExpenseScreen() {
 
             <TextInput
               placeholder="Valor da despesa"
-              placeholderTextColor="#A0AEC0"
+              placeholderTextColor={colors.gray}
               keyboardType="numeric"
               value={valueExpense}
               onChangeText={(val) => setValueExpense(formatCurrency(val))}
@@ -346,7 +279,7 @@ export default function FormExpenseScreen() {
 
             <TextInput
               placeholder="DD/MM/YYYY"
-              placeholderTextColor="#A0AEC0"
+              placeholderTextColor={colors.gray}
               keyboardType="numeric"
               maxLength={10}
               value={displayDate}
@@ -356,7 +289,7 @@ export default function FormExpenseScreen() {
 
             <TextInput
               placeholder="Anotação"
-              placeholderTextColor="#A0AEC0"
+              placeholderTextColor={colors.gray}
               value={anotation}
               onChangeText={setAnotation}
               multiline
@@ -407,19 +340,23 @@ export default function FormExpenseScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.iconGrid}>
-              {AVAILABLE_ICONS.map((item) => (
+              {ListIcons.map((item: any) => (
                 <TouchableOpacity
                   key={item}
                   style={[
                     styles.iconTile,
-                    icon === item && { borderColor: "#3182CE", borderWidth: 2 },
+                    icon === item && styles.iconTileSelected,
                   ]}
                   onPress={() => {
                     setIcon(item);
                     setShowIconModal(false);
                   }}
                 >
-                  <Ionicons name={item as any} size={24} color="#3182CE" />
+                  <Ionicons
+                    name={item as any}
+                    size={24}
+                    color={colors.primary}
+                  />
                 </TouchableOpacity>
               ))}
             </ScrollView>
