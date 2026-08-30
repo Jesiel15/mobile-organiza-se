@@ -1,10 +1,9 @@
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { ListIcons } from "@/constants/list-icons";
-
 import { getPaletteColors } from "@/constants/palette-colors";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
-import { getExpenseFormStyles } from "@/styles/(components)/expense-form.styles";
+import { getExpenseRevenueFormStyles } from "@/styles/(components)/expense-revenue-form.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -20,44 +19,39 @@ import {
   View,
 } from "react-native";
 
-export default function FormExpenseScreen() {
+export default function FormRevenueScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
     monthYear?: string;
-    expenseId?: string;
     revenueId?: string;
   }>();
 
   const monthYear = Array.isArray(params.monthYear)
     ? params.monthYear[0]
     : params.monthYear;
-  const expenseId = Array.isArray(params.expenseId)
-    ? params.expenseId[0]
-    : params.expenseId;
   const revenueId = Array.isArray(params.revenueId)
     ? params.revenueId[0]
     : params.revenueId;
 
-  const currentId = expenseId || revenueId;
-  const isEditing = Boolean(monthYear && currentId);
+  const isEditing = Boolean(monthYear && revenueId);
 
   // Tema, Paleta e Responsividade
   const { colors } = useTheme();
   const paletteColors = getPaletteColors(colors);
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
-  const styles = getExpenseFormStyles(colors, isMobile);
+  const styles = getExpenseRevenueFormStyles(colors, isMobile);
 
   const [loading, setLoading] = useState<boolean>(isEditing);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   // Estados do Formulário
-  const [nameExpense, setNameExpense] = useState("");
-  const [valueExpense, setValueExpense] = useState("");
+  const [nameRevenue, setNameRevenue] = useState("");
+  const [valueRevenue, setValueRevenue] = useState("");
   const [displayDate, setDisplayDate] = useState("");
   const [anotation, setAnotation] = useState("");
-  const [color, setColor] = useState(colors.red);
-  const [icon, setIcon] = useState<string>("barcode-outline");
+  const [color, setColor] = useState(colors.green || "#48BB78");
+  const [icon, setIcon] = useState<string>("wallet-outline");
 
   // Modais / Popovers
   const [showIconModal, setShowIconModal] = useState(false);
@@ -67,7 +61,7 @@ export default function FormExpenseScreen() {
     let isMounted = true;
 
     if (isEditing) {
-      loadExpenseData(isMounted);
+      loadRevenueData(isMounted);
     } else {
       resetForm();
       setLoading(false);
@@ -76,46 +70,51 @@ export default function FormExpenseScreen() {
     return () => {
       isMounted = false;
     };
-  }, [monthYear, currentId]);
+  }, [monthYear, revenueId]);
 
   const resetForm = () => {
-    setNameExpense("");
-    setValueExpense("");
+    setNameRevenue("");
+    setValueRevenue("");
     setDisplayDate(new Date().toLocaleDateString("pt-BR"));
     setAnotation("");
-    setColor(colors.red);
-    setIcon("barcode-outline");
+    setColor(colors.green || "#48BB78");
+    setIcon("wallet-outline");
   };
 
-  const loadExpenseData = async (isMounted: boolean) => {
+  const loadRevenueData = async (isMounted: boolean) => {
     try {
       setLoading(true);
-      const response = await api.get(`/expenses/${monthYear}/${currentId}`);
-      const expense = response.data?.data || response.data;
+      const response = await api.get(`/revenues/${monthYear}/${revenueId}`);
+      const revenue = response.data?.data || response.data;
 
       if (!isMounted) return;
 
-      setNameExpense(expense.nameExpense || "");
+      setNameRevenue(revenue.nameRevenue || revenue.nameExpense || "");
 
-      const rawValue = expense.valueExpense
-        ? Math.round(expense.valueExpense * 100).toString()
-        : "0";
-      setValueExpense(formatCurrency(rawValue));
+      const rawValue =
+        revenue.valueRevenue || revenue.valueExpense
+          ? Math.round(
+              (revenue.valueRevenue || revenue.valueExpense) * 100
+            ).toString()
+          : "0";
+      setValueRevenue(formatCurrency(rawValue));
 
-      if (expense.dateExpense) {
-        const rawDate = expense.dateExpense.split("T")[0];
+      if (revenue.dateRevenue || revenue.dateExpense) {
+        const rawDate = (revenue.dateRevenue || revenue.dateExpense).split(
+          "T"
+        )[0];
         const [year, month, day] = rawDate.split("-");
         if (year && month && day) {
           setDisplayDate(`${day}/${month}/${year}`);
         }
       }
 
-      setAnotation(expense.anotation || "");
-      setColor(expense.color || colors.red);
-      setIcon(expense.icon || "barcode-outline");
+      setAnotation(revenue.anotation || "");
+      setColor(revenue.color || colors.green || "#48BB78");
+      setIcon(revenue.icon || "wallet-outline");
     } catch (error) {
-      console.error("Erro ao carregar despesa:", error);
-      Alert.alert("Erro", "Não foi possível carregar os dados da despesa.");
+      console.error("Erro ao carregar receita:", error);
+      Alert.alert("Erro", "Não foi possível carregar os dados da receita.");
       router.back();
     } finally {
       if (isMounted) setLoading(false);
@@ -148,14 +147,14 @@ export default function FormExpenseScreen() {
   };
 
   const handleSave = async () => {
-    if (!nameExpense || !valueExpense) {
+    if (!nameRevenue || !valueRevenue) {
       Alert.alert("Atenção", "Preencha os campos obrigatórios.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const numericValue = parseFloat(valueExpense.replace(/\D/g, "")) / 100;
+      const numericValue = parseFloat(valueRevenue.replace(/\D/g, "")) / 100;
 
       let isoDate = new Date().toISOString();
       if (displayDate.length === 10) {
@@ -166,28 +165,28 @@ export default function FormExpenseScreen() {
       }
 
       const payload = {
-        nameExpense,
-        valueExpense: numericValue,
-        dateExpense: isoDate,
+        nameRevenue,
+        valueRevenue: numericValue,
+        dateRevenue: isoDate,
         anotation,
         color,
         icon,
       };
 
       if (isEditing) {
-        await api.put(`/expenses/${monthYear}/${currentId}`, payload);
-        Alert.alert("Sucesso", "Despesa atualizada com sucesso!");
+        await api.put(`/revenues/${monthYear}/${revenueId}`, payload);
+        Alert.alert("Sucesso", "Receita atualizada com sucesso!");
       } else {
-        await api.post("/expenses", payload);
-        Alert.alert("Sucesso", "Despesa criada com sucesso!");
+        await api.post("/revenues", payload);
+        Alert.alert("Sucesso", "Receita criada com sucesso!");
       }
 
       router.back();
     } catch (error) {
-      console.error("Erro ao salvar despesa:", error);
+      console.error("Erro ao salvar receita:", error);
       Alert.alert(
         "Erro",
-        isEditing ? "Falha ao editar despesa." : "Falha ao criar despesa."
+        isEditing ? "Falha ao editar receita." : "Falha ao criar receita."
       );
     } finally {
       setSubmitting(false);
@@ -207,7 +206,7 @@ export default function FormExpenseScreen() {
         ) : (
           <ScrollView contentContainerStyle={styles.formContainer}>
             <Text style={styles.title}>
-              {isEditing ? "Editar despesa" : "Adicionar despesa"}
+              {isEditing ? "Editar receita" : "Adicionar receita"}
             </Text>
 
             {/* Seletores de Ícone e Cor */}
@@ -261,19 +260,19 @@ export default function FormExpenseScreen() {
 
             {/* Campos de Texto */}
             <TextInput
-              placeholder="Nome da despesa"
+              placeholder="Nome da receita"
               placeholderTextColor={colors.gray}
-              value={nameExpense}
-              onChangeText={setNameExpense}
+              value={nameRevenue}
+              onChangeText={setNameRevenue}
               style={styles.input}
             />
 
             <TextInput
-              placeholder="Valor da despesa"
+              placeholder="Valor da receita"
               placeholderTextColor={colors.gray}
               keyboardType="numeric"
-              value={valueExpense}
-              onChangeText={(val) => setValueExpense(formatCurrency(val))}
+              value={valueRevenue}
+              onChangeText={(val) => setValueRevenue(formatCurrency(val))}
               style={styles.input}
             />
 
@@ -313,7 +312,7 @@ export default function FormExpenseScreen() {
                     ? "Salvando..."
                     : isEditing
                     ? "Salvar Alterações"
-                    : "Adicionar Despesa"}
+                    : "Adicionar Receita"}
                 </Text>
               </TouchableOpacity>
 

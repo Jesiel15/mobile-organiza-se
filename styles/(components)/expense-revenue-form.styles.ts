@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { ThemeColors } from "../../constants/colors";
 
-export const getExpenseFormStyles = (colors: ThemeColors, isMobile: boolean) =>
+export const getExpenseRevenueFormStyles = (colors: ThemeColors, isMobile: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -25,7 +25,7 @@ export default function HomeScreen() {
 
         <TransactionsList
           onNavigateToAddExpense={() => router.push("/expense-form")}
-          onNavigateToAddRevenue={() => router.push("/expense-form")}
+          onNavigateToAddRevenue={() => router.push("/revenue-form")}
           onNavigateToEditExpense={(monthYear, id) =>
             router.push({
               pathname: "/expense-form",
@@ -34,7 +34,7 @@ export default function HomeScreen() {
           }
           onNavigateToEditRevenue={(monthYear, id) =>
             router.push({
-              pathname: "/expense-form",
+              pathname: "/revenue-form",
               params: { monthYear, revenueId: String(id) },
             })
           }
