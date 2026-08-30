@@ -217,7 +217,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
     actionsRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
+      gap: 8,
     },
   });
 
