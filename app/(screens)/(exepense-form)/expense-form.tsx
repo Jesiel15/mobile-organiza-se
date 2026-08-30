@@ -1,17 +1,97 @@
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
+import { getExpenseFormStyles } from "@/styles/(components)/expense-form.styles";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
+
+const AVAILABLE_ICONS = [
+  "call-outline",
+  "wallet-outline",
+  "card-outline",
+  "cart-outline",
+  "car-outline",
+  "home-outline",
+  "receipt-outline",
+  "barcode-outline",
+  "bag-handle-outline",
+  "gift-outline",
+  "cash-outline",
+  "school-outline",
+  "wifi-outline",
+  "person-outline",
+  "people-outline",
+  "tv-outline",
+  "notifications-outline",
+  "camera-outline",
+  "ticket-outline",
+  "calendar-outline",
+  "briefcase-outline",
+  "trash-outline",
+  "basket-outline",
+  "grid-outline",
+  "business-outline",
+  "bus-outline",
+  "speedometer-outline",
+  "pricetag-outline",
+  "location-outline",
+  "videocam-outline",
+  "mic-outline",
+  "headset-outline",
+  "sparkles-outline",
+  "pencil-outline",
+  "star-outline",
+  "heart-outline",
+  "bookmark-outline",
+  "document-text-outline",
+  "trophy-outline",
+  "flash-outline",
+  "cube-outline",
+  "stats-chart-outline",
+  "link-outline",
+  "paperclip-outline",
+  "cloud-outline",
+  "lock-closed-outline",
+  "bulb-outline",
+  "folder-outline",
+  "checkmark-outline",
+  "chatbubble-outline",
+  "open-outline",
+  "globe-outline",
+  "refresh-outline",
+  "download-outline",
+  "search-outline",
+  "add-circle-outline",
+  "remove-circle-outline",
+  "mail-outline",
+  "compass-outline",
+  "color-palette-outline",
+] as const;
+
+const PALETTE_COLORS = [
+  "#FF0000",
+  "#FF4500",
+  "#FF8C00",
+  "#FFD700",
+  "#48BB78",
+  "#4299E1",
+  "#3182CE",
+  "#6B46C1",
+  "#ED64A6",
+  "#A0AEC0",
+];
 
 export default function FormExpenseScreen() {
   const router = useRouter();
@@ -21,7 +101,6 @@ export default function FormExpenseScreen() {
     revenueId?: string;
   }>();
 
-  // Normalização dos parâmetros
   const monthYear = Array.isArray(params.monthYear)
     ? params.monthYear[0]
     : params.monthYear;
@@ -34,7 +113,12 @@ export default function FormExpenseScreen() {
 
   const currentId = expenseId || revenueId;
   const isEditing = Boolean(monthYear && currentId);
+
+  // Tema e Responsividade
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  const styles = getExpenseFormStyles(colors, isMobile);
 
   const [loading, setLoading] = useState<boolean>(isEditing);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -42,10 +126,14 @@ export default function FormExpenseScreen() {
   // Estados do Formulário
   const [nameExpense, setNameExpense] = useState("");
   const [valueExpense, setValueExpense] = useState("");
-  const [dateExpense, setDateExpense] = useState("");
+  const [displayDate, setDisplayDate] = useState("");
   const [anotation, setAnotation] = useState("");
-  const [color, setColor] = useState("#ff0000");
-  const [icon, setIcon] = useState("barcode-outline");
+  const [color, setColor] = useState("#FF0000");
+  const [icon, setIcon] = useState<string>("barcode-outline");
+
+  // Modais / Popovers
+  const [showIconModal, setShowIconModal] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,7 +141,6 @@ export default function FormExpenseScreen() {
     if (isEditing) {
       loadExpenseData(isMounted);
     } else {
-      // Limpa formulário se for modo de criação
       resetForm();
       setLoading(false);
     }
@@ -66,9 +153,9 @@ export default function FormExpenseScreen() {
   const resetForm = () => {
     setNameExpense("");
     setValueExpense("");
-    setDateExpense("");
+    setDisplayDate(new Date().toLocaleDateString("pt-BR"));
     setAnotation("");
-    setColor("#ff0000");
+    setColor("#FF0000");
     setIcon("barcode-outline");
   };
 
@@ -89,11 +176,14 @@ export default function FormExpenseScreen() {
 
       if (expense.dateExpense) {
         const rawDate = expense.dateExpense.split("T")[0];
-        setDateExpense(rawDate);
+        const [year, month, day] = rawDate.split("-");
+        if (year && month && day) {
+          setDisplayDate(`${day}/${month}/${year}`);
+        }
       }
 
       setAnotation(expense.anotation || "");
-      setColor(expense.color || "#ff0000");
+      setColor(expense.color || "#FF0000");
       setIcon(expense.icon || "barcode-outline");
     } catch (error) {
       console.error("Erro ao carregar despesa:", error);
@@ -113,6 +203,22 @@ export default function FormExpenseScreen() {
     }).format(numericValue);
   };
 
+  const handleDateChange = (text: string) => {
+    const cleaned = text.replace(/\D/g, "");
+    let formatted = cleaned;
+
+    if (cleaned.length > 2 && cleaned.length <= 4) {
+      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+    } else if (cleaned.length > 4) {
+      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(
+        2,
+        4
+      )}/${cleaned.slice(4, 8)}`;
+    }
+
+    setDisplayDate(formatted);
+  };
+
   const handleSave = async () => {
     if (!nameExpense || !valueExpense) {
       Alert.alert("Atenção", "Preencha os campos obrigatórios.");
@@ -123,17 +229,18 @@ export default function FormExpenseScreen() {
     try {
       const numericValue = parseFloat(valueExpense.replace(/\D/g, "")) / 100;
 
-      let finalDate = dateExpense;
-      if (!finalDate) {
-        finalDate = new Date().toISOString();
-      } else if (!finalDate.includes("T")) {
-        finalDate = new Date(finalDate).toISOString();
+      let isoDate = new Date().toISOString();
+      if (displayDate.length === 10) {
+        const [day, month, year] = displayDate.split("/");
+        isoDate = new Date(
+          `${year}-${month}-${day}T00:00:00.000Z`
+        ).toISOString();
       }
 
       const payload = {
         nameExpense,
         valueExpense: numericValue,
-        dateExpense: finalDate,
+        dateExpense: isoDate,
         anotation,
         color,
         icon,
@@ -160,110 +267,172 @@ export default function FormExpenseScreen() {
   };
 
   return (
-    <View style={{ flex: 1, flexDirection: "row" }}>
-      {/* Mantém a Sidebar visível mesmo durante o carregamento */}
+    <View style={styles.container}>
       <Sidebar activeScreen="Início" />
 
-      <View style={{ flex: 1 }}>
+      <View style={styles.contentContainer}>
         {loading ? (
-          /* O carregamento fica contido apenas na área de conteúdo */
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
+          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={{ marginTop: 12, color: colors.textColor }}>
-              Carregando dados...
-            </Text>
+            <Text style={styles.loadingText}>Carregando dados...</Text>
           </View>
         ) : (
-          <ScrollView contentContainerStyle={{ padding: 24, flexGrow: 1 }}>
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: "bold",
-                marginBottom: 20,
-                color: colors.textColor,
-              }}
-            >
+          <ScrollView contentContainerStyle={styles.formContainer}>
+            <Text style={styles.title}>
               {isEditing ? "Editar despesa" : "Adicionar despesa"}
             </Text>
 
+            {/* Seletores de Ícone e Cor */}
+            <View style={styles.selectorsRow}>
+              <View style={styles.selectorItem}>
+                <Text style={styles.label}>Selecione o ícone:</Text>
+                <TouchableOpacity
+                  style={[styles.iconBox, { backgroundColor: color }]}
+                  onPress={() => setShowIconModal(true)}
+                >
+                  <Ionicons name={icon as any} size={24} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.selectorItem}>
+                <Text style={styles.label}>Selecione a cor:</Text>
+                <TouchableOpacity
+                  style={[styles.colorBox, { backgroundColor: color }]}
+                  onPress={() => setShowColorPicker(!showColorPicker)}
+                />
+              </View>
+            </View>
+
+            {/* Color Picker Popover */}
+            {showColorPicker && (
+              <View style={styles.colorPickerContainer}>
+                <Text style={styles.colorPickerTitle}>Escolha uma cor:</Text>
+                <View style={styles.paletteGrid}>
+                  {PALETTE_COLORS.map((c) => (
+                    <TouchableOpacity
+                      key={c}
+                      style={[
+                        styles.paletteCircle,
+                        { backgroundColor: c },
+                        color === c && styles.paletteCircleSelected,
+                      ]}
+                      onPress={() => {
+                        setColor(c);
+                        setShowColorPicker(false);
+                      }}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Campos de Texto */}
             <TextInput
               placeholder="Nome da despesa"
+              placeholderTextColor="#A0AEC0"
               value={nameExpense}
               onChangeText={setNameExpense}
-              style={{
-                backgroundColor: "#fff",
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 16,
-              }}
+              style={styles.input}
             />
 
             <TextInput
               placeholder="Valor da despesa"
+              placeholderTextColor="#A0AEC0"
               keyboardType="numeric"
               value={valueExpense}
               onChangeText={(val) => setValueExpense(formatCurrency(val))}
-              style={{
-                backgroundColor: "#fff",
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 16,
-              }}
+              style={styles.input}
+            />
+
+            <TextInput
+              placeholder="DD/MM/YYYY"
+              placeholderTextColor="#A0AEC0"
+              keyboardType="numeric"
+              maxLength={10}
+              value={displayDate}
+              onChangeText={handleDateChange}
+              style={[styles.input, styles.dateInput]}
             />
 
             <TextInput
               placeholder="Anotação"
+              placeholderTextColor="#A0AEC0"
               value={anotation}
               onChangeText={setAnotation}
               multiline
-              numberOfLines={3}
-              style={{
-                backgroundColor: "#fff",
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 20,
-              }}
+              numberOfLines={4}
+              style={[styles.input, styles.textArea]}
             />
 
-            <TouchableOpacity
-              onPress={handleSave}
-              disabled={submitting}
-              style={{
-                backgroundColor: "#22c55e",
-                padding: 14,
-                borderRadius: 8,
-                alignItems: "center",
-                marginBottom: 10,
-                opacity: submitting ? 0.7 : 1,
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                {submitting
-                  ? "Salvando..."
-                  : isEditing
-                  ? "Salvar Alterações"
-                  : "Adicionar Despesa"}
-              </Text>
-            </TouchableOpacity>
+            {/* Botões */}
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                onPress={handleSave}
+                disabled={submitting}
+                style={[
+                  styles.btn,
+                  styles.btnSave,
+                  submitting && { opacity: 0.7 },
+                ]}
+              >
+                <Text style={styles.btnText}>
+                  {submitting
+                    ? "Salvando..."
+                    : isEditing
+                    ? "Salvar Alterações"
+                    : "Adicionar Despesa"}
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{
-                backgroundColor: "#ef4444",
-                padding: 14,
-                borderRadius: 8,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                Cancelar
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={[styles.btn, styles.btnCancel]}
+              >
+                <Text style={styles.btnText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         )}
       </View>
+
+      {/* Modal de Seleção de Ícones */}
+      <Modal visible={showIconModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecionar Ícone</Text>
+              <TouchableOpacity onPress={() => setShowIconModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textColor} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.iconGrid}>
+              {AVAILABLE_ICONS.map((item) => (
+                <TouchableOpacity
+                  key={item}
+                  style={[
+                    styles.iconTile,
+                    icon === item && { borderColor: "#3182CE", borderWidth: 2 },
+                  ]}
+                  onPress={() => {
+                    setIcon(item);
+                    setShowIconModal(false);
+                  }}
+                >
+                  <Ionicons name={item as any} size={24} color="#3182CE" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.modalCancelBtn}
+              onPress={() => setShowIconModal(false)}
+            >
+              <Text style={styles.btnText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
