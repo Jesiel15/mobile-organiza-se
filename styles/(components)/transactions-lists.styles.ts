@@ -8,7 +8,8 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       backgroundColor: colors?.backgroundHome || "#F9FAFB",
     },
     scrollContent: {
-      padding: 16,
+      padding: 0,
+      paddingTop: 20,
       paddingBottom: isMobile ? 120 : 32,
     },
     loader: {
@@ -20,7 +21,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       zIndex: 999,
     },
     filterLabel: {
-      fontSize: 14,
+      fontSize: 20,
       fontWeight: "600",
       color: colors?.textColor || "#101828",
       marginBottom: 8,
@@ -34,20 +35,20 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       borderColor: colors?.surfaceBorder || "#D0D5DD",
       borderRadius: 8,
       paddingHorizontal: 14,
-      height: 42,
-      width: isMobile ? "100%" : 230,
+      height: 48,
+      width: isMobile ? "100%" : 360,
     },
     customPickerText: {
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: "500",
       color: colors?.textColor || "#344054",
       textTransform: "capitalize",
     },
     popoverCard: {
       position: "absolute",
-      top: 76,
+      top: 80,
       left: 0,
-      width: isMobile ? "100%" : 260,
+      width: isMobile ? "100%" : 360,
       backgroundColor: colors?.surface || "#FFFFFF",
       borderRadius: 12,
       borderWidth: 1,
@@ -66,7 +67,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       padding: 4,
     },
     popoverYearText: {
-      fontSize: 15,
+      fontSize: 24,
       fontWeight: "600",
       color: colors?.textColor || "#101828",
     },
@@ -90,7 +91,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       borderColor: colors?.primary || "#0284C7",
     },
     monthGridText: {
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: "500",
       color: colors?.textColor || "#344054",
       textTransform: "lowercase",
@@ -107,7 +108,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       alignItems: "flex-end",
     },
     footerActionText: {
-      fontSize: 13,
+      fontSize: 18,
       fontWeight: "600",
       color: colors?.primary || "#0284C7",
     },
@@ -120,14 +121,14 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       width: "100%",
     },
     sectionTitle: {
-      fontSize: 16,
+      fontSize: 32,
       fontWeight: "700",
       color: colors?.textColor || "#101828",
       marginBottom: 12,
     },
     cardSection: {
       borderRadius: 12,
-      padding: 12,
+      padding: isMobile ? 14 : 48,
       // borderWidth: 1,
       borderColor: colors?.surfaceBorder || "#EAECF0",
       backgroundColor: colors?.surface || "#FFFFFF",
@@ -145,7 +146,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
     addButtonText: {
       color: colors?.gray || "#475467",
       fontWeight: "500",
-      fontSize: 13,
+      fontSize: 20,
     },
     itemRow: {
       flexDirection: "row",
@@ -167,17 +168,17 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       marginRight: 4,
     },
     itemName: {
-      fontSize: 13,
+      fontSize: isMobile ? 14 : 20,
       fontWeight: "500",
       color: colors?.textColor || "#101828",
     },
     itemDate: {
-      fontSize: 11,
+      fontSize: 14,
       color: colors?.gray || "#667085",
       marginTop: 2,
     },
     itemAmount: {
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: "600",
       color: colors?.textColor || "#101828",
       marginRight: 4,
