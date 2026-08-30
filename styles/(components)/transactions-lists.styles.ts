@@ -153,7 +153,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       alignItems: "center",
       paddingVertical: 10,
       borderBottomWidth: 1,
-      borderBottomColor: colors?.surfaceBorder || "#F2F4F7",
+      borderBottomColor: "rgba(0, 0, 0, 0.2)",
       gap: 8,
     },
     iconBox: {
