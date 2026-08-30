@@ -31,12 +31,13 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       alignItems: "center",
       justifyContent: "space-between",
       backgroundColor: colors?.surface || "#FFFFFF",
-      // borderWidth: 1,
       borderColor: colors?.surfaceBorder || "#D0D5DD",
       borderRadius: 8,
-      paddingHorizontal: 14,
+      paddingLeft: 14, // Mudado de paddingHorizontal para aplicar padding só na esquerda
+      paddingRight: 0, // Garante que o ícone encoste na borda direita
       height: 48,
       width: isMobile ? "100%" : 360,
+      overflow: "hidden", // Obriga o fundo azul do ícone a respeitar o borderRadius
       boxShadow: [
         {
           offsetX: 2,
@@ -47,12 +48,20 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
         },
       ],
     },
+    iconContainer: {
+      backgroundColor: isMobile ? colors?.white : colors?.background,
+      height: "100%", // Preenche toda a altura (48px) do container
+      width: 48, // Cria um quadrado perfeito do lado direito
+      alignItems: "center",
+      justifyContent: "center",
+    },
     customPickerText: {
       fontSize: 16,
       fontWeight: "500",
       color: colors?.textColor || "#344054",
       textTransform: "capitalize",
     },
+
     popoverCard: {
       position: "absolute",
       top: 80,

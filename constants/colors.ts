@@ -91,7 +91,7 @@ export const darkColors: ThemeColors = {
   black: "#ffffff",
   yellow: "#eed868",
   gray: "#ffffff",
-  background: "#404040",
+  background: "#2e6fb4",
   backgroundHome: "#303030",
 
   // Aura / componentes

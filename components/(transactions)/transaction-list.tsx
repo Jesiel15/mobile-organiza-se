@@ -397,7 +397,10 @@ export default function TransactionsList({
               year: "numeric",
             })}
           </Text>
-          <Ionicons name="calendar-outline" size={18} color={colors.gray} />
+
+          <View style={styles.iconContainer}>
+            <Ionicons name="calendar-outline" size={20}  color={colors.black} />
+          </View>
         </TouchableOpacity>
 
         {showMonthPicker && (
