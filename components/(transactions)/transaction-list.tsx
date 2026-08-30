@@ -15,6 +15,7 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 import { getTransactionsStyles } from "@/styles/(components)/transactions-lists.styles";
+import SummaryCards from "../(summary)/summary-cards";
 
 export interface Expense {
   id: string;
@@ -76,6 +77,15 @@ export default function TransactionsList({
 
   const [monthYearFilter, setMonthYearFilter] = useState<Date>(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
+
+  const totalExpenses = expenses.reduce(
+    (acc, item) => acc + item.valueExpense,
+    0
+  );
+  const totalRevenues = revenues.reduce(
+    (acc, item) => acc + item.valueRevenue,
+    0
+  );
 
   const getMonthYearKey = (date: Date): string => {
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -374,6 +384,12 @@ export default function TransactionsList({
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
+      {/* Componente de Resumo de Totais */}
+      <SummaryCards
+        totalExpenses={totalExpenses}
+        totalRevenues={totalRevenues}
+      />
+
       {isLoading && (
         <ActivityIndicator
           size="large"
@@ -399,7 +415,7 @@ export default function TransactionsList({
           </Text>
 
           <View style={styles.iconContainer}>
-            <Ionicons name="calendar-outline" size={20}  color={colors.black} />
+            <Ionicons name="calendar-outline" size={20} color={colors.black} />
           </View>
         </TouchableOpacity>
 
