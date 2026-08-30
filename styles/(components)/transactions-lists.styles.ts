@@ -181,12 +181,12 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       paddingVertical: 10,
       borderBottomWidth: 1,
       borderBottomColor: "rgba(0, 0, 0, 0.2)",
-      gap: 8,
+      gap: 18,
     },
     iconBox: {
-      width: 28,
-      height: 28,
-      borderRadius: 6,
+      width: 38,
+      height: 38,
+      borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
     },
@@ -195,14 +195,14 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       marginRight: 4,
     },
     itemName: {
-      fontSize: isMobile ? 14 : 20,
+      fontSize: isMobile ? 14 : 16,
       fontWeight: "500",
       color: colors?.textColor || "#101828",
     },
     itemDate: {
       fontSize: 14,
       color: colors?.gray || "#667085",
-      marginTop: 2,
+      // marginTop: 2,
     },
     itemAmount: {
       fontSize: 16,

@@ -499,12 +499,32 @@ export default function TransactionsList({
                 <View style={styles.itemRow}>
                   <TouchableOpacity
                     onPress={() => toggleExpensePaidStatus(item)}
+                    activeOpacity={0.7}
                   >
-                    <Ionicons
-                      name={item.isPaid ? "checkbox" : "square-outline"}
-                      size={20}
-                      color={item.isPaid ? colors.gray : colors.surfaceBorder}
-                    />
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 6, // Controla a curvatura dos cantos de ambos
+                        borderWidth: 1.5, // Controla a espessura da linha de ambos
+                        borderColor: item.isPaid
+                          ? colors.gray
+                          : colors.surfaceBorder,
+                        backgroundColor: item.isPaid
+                          ? colors.gray
+                          : "transparent",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {item.isPaid && (
+                        <Ionicons
+                          name="checkmark"
+                          size={16} // Ajuste o tamanho do ícone interno conforme necessário
+                          color={colors.white} // Cor da marquinha do check
+                        />
+                      )}
+                    </View>
                   </TouchableOpacity>
 
                   <View
@@ -515,7 +535,7 @@ export default function TransactionsList({
                   >
                     <Ionicons
                       name={getValidIconName(item.icon, "barcode-outline")}
-                      size={16}
+                      size={28}
                       color="#fff"
                     />
                   </View>
