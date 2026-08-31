@@ -1,3 +1,4 @@
+import AlertModal from "@/components/(alert-modal)/alert-modal";
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { ListIcons } from "@/constants/list-icons";
 import { getPaletteColors } from "@/constants/palette-colors";
@@ -9,7 +10,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   ScrollView,
   Text,
@@ -56,6 +56,34 @@ export default function FormRevenueScreen() {
   // Modais / Popovers
   const [showIconModal, setShowIconModal] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+
+  // Estado para o AlertModal
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onClose?: () => void;
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+  });
+
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      onClose,
+    });
+  };
+
+  const closeAlert = () => {
+    if (alertConfig.onClose) {
+      alertConfig.onClose();
+    }
+    setAlertConfig((prev) => ({ ...prev, visible: false }));
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -114,8 +142,9 @@ export default function FormRevenueScreen() {
       setIcon(revenue.icon || "wallet-outline");
     } catch (error) {
       console.error("Erro ao carregar receita:", error);
-      Alert.alert("Erro", "Não foi possível carregar os dados da receita.");
-      router.back();
+      showAlert("Erro", "Não foi possível carregar os dados da receita.", () =>
+        router.back()
+      );
     } finally {
       if (isMounted) setLoading(false);
     }
@@ -148,7 +177,7 @@ export default function FormRevenueScreen() {
 
   const handleSave = async () => {
     if (!nameRevenue || !valueRevenue) {
-      Alert.alert("Atenção", "Preencha os campos obrigatórios.");
+      showAlert("Atenção", "Preencha os campos obrigatórios.");
       return;
     }
 
@@ -175,16 +204,18 @@ export default function FormRevenueScreen() {
 
       if (isEditing) {
         await api.put(`/revenues/${monthYear}/${revenueId}`, payload);
-        Alert.alert("Sucesso", "Receita atualizada com sucesso!");
+        showAlert("Sucesso", "Receita atualizada com sucesso!", () =>
+          router.back()
+        );
       } else {
         await api.post("/revenues", payload);
-        Alert.alert("Sucesso", "Receita criada com sucesso!");
+        showAlert("Sucesso", "Receita criada com sucesso!", () =>
+          router.back()
+        );
       }
-
-      router.back();
     } catch (error) {
       console.error("Erro ao salvar receita:", error);
-      Alert.alert(
+      showAlert(
         "Erro",
         isEditing ? "Falha ao editar receita." : "Falha ao criar receita."
       );
@@ -369,6 +400,14 @@ export default function FormRevenueScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal de Alerta Customizado */}
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={closeAlert}
+      />
     </View>
   );
 }

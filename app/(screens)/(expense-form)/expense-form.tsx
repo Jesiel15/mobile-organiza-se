@@ -1,6 +1,6 @@
+import AlertModal from "@/components/(alert-modal)/alert-modal";
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { ListIcons } from "@/constants/list-icons";
-
 import { getPaletteColors } from "@/constants/palette-colors";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
@@ -10,7 +10,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   ScrollView,
   Text,
@@ -59,9 +58,37 @@ export default function FormExpenseScreen() {
   const [color, setColor] = useState(colors.red);
   const [icon, setIcon] = useState<string>("barcode-outline");
 
-  // Modais / Popovers
+  // Popovers
   const [showIconModal, setShowIconModal] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+
+  // Estado para a AlertModal
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onClose?: () => void;
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+  });
+
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      onClose,
+    });
+  };
+
+  const closeAlert = () => {
+    if (alertConfig.onClose) {
+      alertConfig.onClose();
+    }
+    setAlertConfig((prev) => ({ ...prev, visible: false }));
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -115,8 +142,9 @@ export default function FormExpenseScreen() {
       setIcon(expense.icon || "barcode-outline");
     } catch (error) {
       console.error("Erro ao carregar despesa:", error);
-      Alert.alert("Erro", "Não foi possível carregar os dados da despesa.");
-      router.back();
+      showAlert("Erro", "Não foi possível carregar os dados da despesa.", () =>
+        router.back()
+      );
     } finally {
       if (isMounted) setLoading(false);
     }
@@ -149,7 +177,7 @@ export default function FormExpenseScreen() {
 
   const handleSave = async () => {
     if (!nameExpense || !valueExpense) {
-      Alert.alert("Atenção", "Preencha os campos obrigatórios.");
+      showAlert("Atenção", "Preencha os campos obrigatórios.");
       return;
     }
 
@@ -176,16 +204,18 @@ export default function FormExpenseScreen() {
 
       if (isEditing) {
         await api.put(`/expenses/${monthYear}/${currentId}`, payload);
-        Alert.alert("Sucesso", "Despesa atualizada com sucesso!");
+        showAlert("Sucesso", "Despesa atualizada com sucesso!", () =>
+          router.back()
+        );
       } else {
         await api.post("/expenses", payload);
-        Alert.alert("Sucesso", "Despesa criada com sucesso!");
+        showAlert("Sucesso", "Despesa criada com sucesso!", () =>
+          router.back()
+        );
       }
-
-      router.back();
     } catch (error) {
       console.error("Erro ao salvar despesa:", error);
-      Alert.alert(
+      showAlert(
         "Erro",
         isEditing ? "Falha ao editar despesa." : "Falha ao criar despesa."
       );
@@ -370,6 +400,14 @@ export default function FormExpenseScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Novo Modal de Alerta */}
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={closeAlert}
+      />
     </View>
   );
 }
