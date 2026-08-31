@@ -1,7 +1,10 @@
 import { StyleSheet } from "react-native";
 import { ThemeColors } from "../../constants/colors";
 
-export const getExpenseRevenueFormStyles = (colors: ThemeColors, isMobile: boolean) =>
+export const getExpenseRevenueFormStyles = (
+  colors: ThemeColors,
+  isMobile: boolean
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -69,8 +72,17 @@ export const getExpenseRevenueFormStyles = (colors: ThemeColors, isMobile: boole
       borderRadius: 8,
       marginBottom: 20,
       maxWidth: 320,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
+      // borderWidth: 1,
+      // borderColor: colors.surfaceBorder,
+      boxShadow: [
+        {
+          offsetX: 2,
+          offsetY: 4,
+          blurRadius: 4,
+          spreadDistance: 0,
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      ],
     },
     colorPickerTitle: {
       color: colors.textColor,
@@ -90,18 +102,27 @@ export const getExpenseRevenueFormStyles = (colors: ThemeColors, isMobile: boole
     },
     paletteCircleSelected: {
       borderWidth: 3,
-      borderColor: colors.textColor,
+      borderColor: colors.black,
     },
     input: {
       backgroundColor: colors.surface,
       color: colors.textColor,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
+      // borderWidth: 1,
+      // borderColor: colors.surfaceBorder,
       paddingHorizontal: 16,
       paddingVertical: 12,
       borderRadius: 6,
       fontSize: 16,
       marginBottom: 16,
+      boxShadow: [
+        {
+          offsetX: 2,
+          offsetY: 4,
+          blurRadius: 4,
+          spreadDistance: 0,
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      ],
     },
     dateInput: {
       width: isMobile ? "100%" : 180,
@@ -124,7 +145,7 @@ export const getExpenseRevenueFormStyles = (colors: ThemeColors, isMobile: boole
       justifyContent: "center",
     },
     btnSave: {
-      backgroundColor: colors.green,
+      backgroundColor: colors.neonGreen,
     },
     btnCancel: {
       backgroundColor: colors.red,
