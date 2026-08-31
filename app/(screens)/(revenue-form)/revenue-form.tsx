@@ -158,10 +158,12 @@ export default function FormRevenueScreen() {
 
   const loadRevenueData = async (isMounted: boolean) => {
     try {
+      console.log("revenues--------");
+
       setLoading(true);
       const response = await api.get(`/revenues/${monthYear}/${currentId}`);
       const revenue = response.data?.data || response.data;
-
+      console.log("revenues--------", revenue);
       if (!isMounted) return;
 
       setNameRevenue(revenue.nameRevenue || "");
@@ -172,7 +174,11 @@ export default function FormRevenueScreen() {
       setValueRevenue(formatCurrency(rawValue));
 
       if (revenue.dateRevenue) {
-        setSelectedDate(new Date(revenue.dateRevenue));
+        const dateStr = String(revenue.dateRevenue).split("T")[0];
+        const [year, month, day] = dateStr.split("-").map(Number);
+        if (year && month && day) {
+          setSelectedDate(new Date(year, month - 1, day));
+        }
       }
 
       setAnotation(revenue.anotation || "");
@@ -304,12 +310,15 @@ export default function FormRevenueScreen() {
 
     setSubmitting(true);
     try {
-      const isoDate = selectedDate.toISOString();
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
 
       const payload = {
         nameRevenue,
         valueRevenue: numericValue,
-        dateRevenue: isoDate,
+        dateRevenue: formattedDate,
         anotation,
         color,
         icon,

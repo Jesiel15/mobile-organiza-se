@@ -52,6 +52,20 @@ interface ModalConfig {
   onConfirm: () => void;
 }
 
+// Converte string/Date vinda da API em um Date "local", sem deslocamento de fuso.
+// Evita o bug onde "2026-08-31T00:00:00.000000Z" vira 30/08 na tela (UTC-3).
+const parseLocalDate = (dateInput: string | Date): Date => {
+  if (dateInput instanceof Date) {
+    return dateInput;
+  }
+  const datePart = String(dateInput).split("T")[0];
+  const [year, month, day] = datePart.split("-").map(Number);
+  if (year && month && day) {
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateInput);
+};
+
 const MONTHS_LIST = [
   "jan",
   "fev",
@@ -122,7 +136,7 @@ export default function TransactionsList({
   };
 
   const formatDate = (dateInput: string | Date) => {
-    const d = new Date(dateInput);
+    const d = parseLocalDate(dateInput);
     return d.toLocaleDateString("pt-BR");
   };
 
@@ -165,14 +179,14 @@ export default function TransactionsList({
       const selectedYear = filterDate.getFullYear();
 
       const filteredExpenses = expenseData.filter((exp) => {
-        const d = new Date(exp.dateExpense);
+        const d = parseLocalDate(exp.dateExpense);
         return (
           d.getMonth() === selectedMonth && d.getFullYear() === selectedYear
         );
       });
 
       const filteredRevenues = revenueData.filter((rev) => {
-        const d = new Date(rev.dateRevenue);
+        const d = parseLocalDate(rev.dateRevenue);
         return (
           d.getMonth() === selectedMonth && d.getFullYear() === selectedYear
         );
@@ -212,7 +226,7 @@ export default function TransactionsList({
       const formattedExpenses: Expense[] = expensesArray.map((exp: any) => ({
         ...exp,
         id: exp.id || exp._id,
-        dateExpense: new Date(exp.dateExpense),
+        dateExpense: parseLocalDate(exp.dateExpense),
         isPaid: exp.isPaid || false,
       }));
 
@@ -220,7 +234,7 @@ export default function TransactionsList({
       const formattedRevenues: Revenue[] = revenuesArray.map((rev: any) => ({
         ...rev,
         id: rev.id || rev._id,
-        dateRevenue: new Date(rev.dateRevenue),
+        dateRevenue: parseLocalDate(rev.dateRevenue),
       }));
 
       setAllExpenses(formattedExpenses);
@@ -251,7 +265,7 @@ export default function TransactionsList({
     );
 
     try {
-      const monthYear = getMonthYearKey(new Date(expense.dateExpense));
+      const monthYear = getMonthYearKey(parseLocalDate(expense.dateExpense));
       await api.patch(`/expenses/${monthYear}/${expense.id}`, {
         isPaid: updatedPaidStatus,
       });
@@ -268,7 +282,7 @@ export default function TransactionsList({
     closeModal();
     setIsLoading(true);
     try {
-      const monthYear = getMonthYearKey(new Date(expense.dateExpense));
+      const monthYear = getMonthYearKey(parseLocalDate(expense.dateExpense));
       await api.delete(`/expenses/${monthYear}/${expense.id}`);
       loadInitialData();
     } catch (err) {
@@ -282,7 +296,7 @@ export default function TransactionsList({
     closeModal();
     setIsLoading(true);
     try {
-      const monthYear = getMonthYearKey(new Date(revenue.dateRevenue));
+      const monthYear = getMonthYearKey(parseLocalDate(revenue.dateRevenue));
       await api.delete(`/revenues/${monthYear}/${revenue.id}`);
       loadInitialData();
     } catch (err) {
@@ -296,7 +310,7 @@ export default function TransactionsList({
     closeModal();
     setIsLoading(true);
     try {
-      const monthYear = getMonthYearKey(new Date(expense.dateExpense));
+      const monthYear = getMonthYearKey(parseLocalDate(expense.dateExpense));
       await api.post(`/expenses/${monthYear}/${expense.id}/replicate`);
       loadInitialData();
     } catch (err) {
@@ -310,7 +324,7 @@ export default function TransactionsList({
     closeModal();
     setIsLoading(true);
     try {
-      const monthYear = getMonthYearKey(new Date(revenue.dateRevenue));
+      const monthYear = getMonthYearKey(parseLocalDate(revenue.dateRevenue));
       await api.post(`/revenues/${monthYear}/${revenue.id}/replicate`);
       loadInitialData();
     } catch (err) {
@@ -322,14 +336,14 @@ export default function TransactionsList({
 
   const handleEditExpense = (expense: Expense) => {
     saveFilterState();
-    const dateObj = new Date(expense.dateExpense);
+    const dateObj = parseLocalDate(expense.dateExpense);
     const monthYear = getMonthYearKey(dateObj);
     onNavigateToEditExpense?.(monthYear, expense.id);
   };
 
   const handleEditRevenue = (revenue: Revenue) => {
     saveFilterState();
-    const dateObj = new Date(revenue.dateRevenue);
+    const dateObj = parseLocalDate(revenue.dateRevenue);
     const monthYear = getMonthYearKey(dateObj);
     onNavigateToEditRevenue?.(monthYear, revenue.id);
   };

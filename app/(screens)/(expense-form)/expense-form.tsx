@@ -172,7 +172,11 @@ export default function FormExpenseScreen() {
       setValueExpense(formatCurrency(rawValue));
 
       if (expense.dateExpense) {
-        setSelectedDate(new Date(expense.dateExpense));
+        const dateStr = String(expense.dateExpense).split("T")[0];
+        const [year, month, day] = dateStr.split("-").map(Number);
+        if (year && month && day) {
+          setSelectedDate(new Date(year, month - 1, day));
+        }
       }
 
       setAnotation(expense.anotation || "");
@@ -304,12 +308,15 @@ export default function FormExpenseScreen() {
 
     setSubmitting(true);
     try {
-      const isoDate = selectedDate.toISOString();
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}T00:00:00`;
 
       const payload = {
         nameExpense,
         valueExpense: numericValue,
-        dateExpense: isoDate,
+        dateExpense: formattedDate,
         anotation,
         color,
         icon,
