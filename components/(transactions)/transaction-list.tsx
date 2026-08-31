@@ -202,49 +202,64 @@ export default function TransactionsList({
     applyFilter(allExpenses, allRevenues, monthYearFilter);
   }, [monthYearFilter, allExpenses, allRevenues, applyFilter]);
 
-  const loadInitialData = async () => {
-    setIsLoading(true);
-    try {
-      const savedFilter = await AsyncStorage.getItem("transactionsFilter");
-      let initialDate = new Date();
-      initialDate.setDate(1);
+  // Busca despesas/receitas na API e atualiza as listas "mestre",
+  // SEM mexer no mês/ano filtrado atualmente. Use esta função sempre que
+  // precisar recarregar os dados após excluir, editar ou replicar algo.
+  const refreshTransactions = useCallback(
+    async (filterDateOverride?: Date) => {
+      setIsLoading(true);
+      try {
+        const [resExp, resRev] = await Promise.all([
+          api.get("/expenses"),
+          api.get("/revenues"),
+        ]);
 
-      if (savedFilter) {
-        const month = parseInt(savedFilter.substring(0, 2), 10) - 1;
-        const year = parseInt(savedFilter.substring(2, 6), 10);
-        initialDate = new Date(year, month, 1);
-        await AsyncStorage.removeItem("transactionsFilter");
+        const expensesArray = resExp.data?.data || resExp.data || [];
+        const formattedExpenses: Expense[] = expensesArray.map((exp: any) => ({
+          ...exp,
+          id: exp.id || exp._id,
+          dateExpense: parseLocalDate(exp.dateExpense),
+          isPaid: exp.isPaid || false,
+        }));
+
+        const revenuesArray = resRev.data?.data || resRev.data || [];
+        const formattedRevenues: Revenue[] = revenuesArray.map((rev: any) => ({
+          ...rev,
+          id: rev.id || rev._id,
+          dateRevenue: parseLocalDate(rev.dateRevenue),
+        }));
+
+        setAllExpenses(formattedExpenses);
+        setAllRevenues(formattedRevenues);
+
+        // Reaplica o filtro na data informada (ou na atualmente selecionada),
+        // mantendo o usuário no mesmo mês que ele já estava vendo.
+        const dateToUse = filterDateOverride ?? monthYearFilter;
+        applyFilter(formattedExpenses, formattedRevenues, dateToUse);
+      } catch (err) {
+        console.error("Erro ao carregar transações:", err);
+      } finally {
+        setIsLoading(false);
       }
-      setMonthYearFilter(initialDate);
+    },
+    [applyFilter, monthYearFilter]
+  );
 
-      const [resExp, resRev] = await Promise.all([
-        api.get("/expenses"),
-        api.get("/revenues"),
-      ]);
+  // Carga inicial: aqui sim faz sentido restaurar o filtro salvo (ao voltar
+  // de uma tela de edição/adição) ou cair no mês atual, e só nesse momento.
+  const loadInitialData = async () => {
+    const savedFilter = await AsyncStorage.getItem("transactionsFilter");
+    let initialDate = new Date();
+    initialDate.setDate(1);
 
-      const expensesArray = resExp.data?.data || resExp.data || [];
-      const formattedExpenses: Expense[] = expensesArray.map((exp: any) => ({
-        ...exp,
-        id: exp.id || exp._id,
-        dateExpense: parseLocalDate(exp.dateExpense),
-        isPaid: exp.isPaid || false,
-      }));
-
-      const revenuesArray = resRev.data?.data || resRev.data || [];
-      const formattedRevenues: Revenue[] = revenuesArray.map((rev: any) => ({
-        ...rev,
-        id: rev.id || rev._id,
-        dateRevenue: parseLocalDate(rev.dateRevenue),
-      }));
-
-      setAllExpenses(formattedExpenses);
-      setAllRevenues(formattedRevenues);
-      applyFilter(formattedExpenses, formattedRevenues, initialDate);
-    } catch (err) {
-      console.error("Erro ao carregar transações:", err);
-    } finally {
-      setIsLoading(false);
+    if (savedFilter) {
+      const month = parseInt(savedFilter.substring(0, 2), 10) - 1;
+      const year = parseInt(savedFilter.substring(2, 6), 10);
+      initialDate = new Date(year, month, 1);
+      await AsyncStorage.removeItem("transactionsFilter");
     }
+    setMonthYearFilter(initialDate);
+    await refreshTransactions(initialDate);
   };
 
   useEffect(() => {
@@ -280,57 +295,45 @@ export default function TransactionsList({
 
   const deleteExpense = async (expense: Expense) => {
     closeModal();
-    setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(parseLocalDate(expense.dateExpense));
       await api.delete(`/expenses/${monthYear}/${expense.id}`);
-      loadInitialData();
+      await refreshTransactions();
     } catch (err) {
       console.error("Falha ao excluir despesa", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const deleteRevenue = async (revenue: Revenue) => {
     closeModal();
-    setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(parseLocalDate(revenue.dateRevenue));
       await api.delete(`/revenues/${monthYear}/${revenue.id}`);
-      loadInitialData();
+      await refreshTransactions();
     } catch (err) {
       console.error("Falha ao excluir receita", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const replicateExpense = async (expense: Expense) => {
     closeModal();
-    setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(parseLocalDate(expense.dateExpense));
       await api.post(`/expenses/${monthYear}/${expense.id}/replicate`);
-      loadInitialData();
+      await refreshTransactions();
     } catch (err) {
       console.error("Falha ao replicar despesa", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const replicateRevenue = async (revenue: Revenue) => {
     closeModal();
-    setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(parseLocalDate(revenue.dateRevenue));
       await api.post(`/revenues/${monthYear}/${revenue.id}/replicate`);
-      loadInitialData();
+      await refreshTransactions();
     } catch (err) {
       console.error("Falha ao replicar receita", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
