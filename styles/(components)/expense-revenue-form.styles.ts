@@ -36,12 +36,14 @@ export const getExpenseRevenueFormStyles = (
       fontWeight: "bold",
       color: colors.textColor,
       marginBottom: 24,
+      marginLeft: isMobile ? 0 : 26,
     },
     selectorsRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: isMobile ? 20 : 40,
       marginBottom: 20,
+      marginLeft: isMobile ? 0 : 26,
       flexWrap: "wrap",
     },
     selectorItem: {
@@ -71,6 +73,7 @@ export const getExpenseRevenueFormStyles = (
       padding: 16,
       borderRadius: 8,
       marginBottom: 20,
+      marginLeft: isMobile ? 0 : 26,
       maxWidth: 320,
       // borderWidth: 1,
       // borderColor: colors.surfaceBorder,
@@ -114,6 +117,7 @@ export const getExpenseRevenueFormStyles = (
       borderRadius: 6,
       fontSize: 16,
       marginBottom: 16,
+      marginLeft: isMobile ? 0 : 26,
       boxShadow: [
         {
           offsetX: 2,
@@ -135,6 +139,7 @@ export const getExpenseRevenueFormStyles = (
       flexDirection: isMobile ? "column" : "row",
       gap: 12,
       marginTop: 8,
+      marginLeft: isMobile ? 0 : 26,
     },
     btn: {
       paddingVertical: 14,

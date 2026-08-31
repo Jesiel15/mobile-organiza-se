@@ -8,11 +8,12 @@ export const getHomeStyles = (colors: ThemeColors, isMobile: boolean) =>
       flexDirection: isMobile ? "column" : "row",
       backgroundColor: colors.backgroundHome,
     },
-    content: {
+  content: {
       flex: 1,
       padding: isMobile ? 14 : 24,
       paddingBottom: isMobile ? 90 : 24,
       paddingTop: isMobile ? 64 : 24,
+      marginLeft: isMobile ? 0 : 26,
     },
     title: {
       fontSize: 24,
