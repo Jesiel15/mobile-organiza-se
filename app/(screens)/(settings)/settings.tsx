@@ -198,7 +198,7 @@ export default function SettingsScreen() {
             <Ionicons
               name={isEditingName ? "close" : "pencil"}
               size={20}
-              color={colors.primary}
+              color={isEditingName ? colors.red : colors.neonGreen}
             />
           </TouchableOpacity>
         </View>
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
             <Ionicons
               name={isEditingEmail ? "close" : "pencil"}
               size={20}
-              color={colors.primary}
+              color={isEditingEmail ? colors.red : colors.neonGreen}
             />
           </TouchableOpacity>
         </View>
@@ -245,7 +245,7 @@ export default function SettingsScreen() {
             <Ionicons
               name={isEditingPassword ? "close" : "pencil"}
               size={20}
-              color={colors.primary}
+              color={isEditingPassword ? colors.red : colors.neonGreen}
             />
           </TouchableOpacity>
         </View>
