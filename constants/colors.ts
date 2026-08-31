@@ -3,10 +3,12 @@
 // pra manter os dois projetos com a mesma identidade visual.
 
 export interface ThemeColors {
+  // Separando cores
   iconeOutColor: string;
   iconeColor: string;
   checkmarkOut: string;
   checkmark: string;
+  modalColor: string;
 
   // Brand colours
   red: string;
@@ -43,10 +45,12 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
+  // Separando cores
   iconeOutColor: "#ffffff",
   iconeColor: "#377cc8",
   checkmarkOut: "#848484",
   checkmark: "#ffffff",
+  modalColor: "#ffffff",
 
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -82,10 +86,12 @@ export const lightColors: ThemeColors = {
 };
 
 export const darkColors: ThemeColors = {
+  // Separando cores
   iconeOutColor: "#848484",
   iconeColor: "#ffffff",
   checkmarkOut: "#ffffff",
   checkmark: "#404040",
+  modalColor: "#404040",
 
   // Brand colours
   red: "#e0533d",
@@ -122,10 +128,13 @@ export const darkColors: ThemeColors = {
 };
 
 export const blueColors: ThemeColors = {
+  // Separando cores
   iconeOutColor: "#ffffff",
   iconeColor: "#285f9e",
   checkmarkOut: "#2881e4",
   checkmark: "#ffffff",
+  modalColor: "#e0f2fe",
+
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
