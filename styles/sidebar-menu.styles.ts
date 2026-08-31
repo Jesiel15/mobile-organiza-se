@@ -5,7 +5,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     // ---------- DESKTOP SIDEBAR ----------
     desktopSidebar: {
-      width: 220,
+      width: 300,
       backgroundColor: colors.white,
       height: "100%",
       boxShadow: [
@@ -54,7 +54,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
     menuList: {
       flex: 1,
       paddingHorizontal: 12,
-      paddingTop: 8,
+      paddingTop: 48,
       gap: 4,
     },
     menuItem: {
@@ -62,7 +62,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
       alignItems: "center",
       gap: 10,
       paddingVertical: 10,
-      paddingHorizontal: 12,
+      paddingHorizontal: 26,
       borderRadius: 8,
     },
     menuItemActive: {
@@ -70,7 +70,7 @@ export const getSidebarStyles = (colors: ThemeColors) =>
     },
     menuText: {
       color: colors.black,
-      fontSize: 14,
+      fontSize: 18,
       fontWeight: "500",
     },
     menuTextActive: {
