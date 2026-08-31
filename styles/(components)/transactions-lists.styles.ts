@@ -190,9 +190,15 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       justifyContent: "center",
       alignItems: "center",
     },
+    dateAndAmountRow: {
+      flexDirection: isMobile ? "column" : "row",
+      alignItems: isMobile ? "flex-start" : "center",
+      justifyContent: "space-between",
+      marginTop: 2,
+    },
     itemDetails: {
       flex: 1,
-      marginRight: 4,
+      marginRight: 8,
     },
     itemName: {
       fontSize: isMobile ? 14 : 16,
@@ -205,10 +211,10 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       // marginTop: 2,
     },
     itemAmount: {
-      fontSize: 16,
+      fontSize: isMobile ? 14 : 16,
       fontWeight: "600",
       color: colors?.textColor || "#101828",
-      marginRight: 4,
+      marginTop: isMobile ? 2 : 0,
     },
     paidText: {
       textDecorationLine: "line-through",

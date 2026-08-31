@@ -525,6 +525,7 @@ export default function TransactionsList({
                 scrollEnabled={false}
                 renderItem={({ item }) => (
                   <View style={styles.itemRow}>
+                    {/* Checkbox */}
                     <TouchableOpacity
                       onPress={() => toggleExpensePaidStatus(item)}
                       activeOpacity={0.7}
@@ -553,6 +554,7 @@ export default function TransactionsList({
                       </View>
                     </TouchableOpacity>
 
+                    {/* Ícone */}
                     <View
                       style={[
                         styles.iconBox,
@@ -566,6 +568,7 @@ export default function TransactionsList({
                       />
                     </View>
 
+                    {/* Detalhes (Nome, Data e Valor juntos) */}
                     <View style={styles.itemDetails}>
                       <Text
                         style={[
@@ -576,20 +579,23 @@ export default function TransactionsList({
                       >
                         {item.nameExpense}
                       </Text>
-                      <Text style={styles.itemDate}>
-                        {formatDate(item.dateExpense)}
-                      </Text>
+
+                      <View style={styles.dateAndAmountRow}>
+                        <Text style={styles.itemDate}>
+                          {formatDate(item.dateExpense)}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.itemAmount,
+                            item.isPaid && styles.paidText,
+                          ]}
+                        >
+                          {formatCurrency(item.valueExpense)}
+                        </Text>
+                      </View>
                     </View>
 
-                    <Text
-                      style={[
-                        styles.itemAmount,
-                        item.isPaid && styles.paidText,
-                      ]}
-                    >
-                      {formatCurrency(item.valueExpense)}
-                    </Text>
-
+                    {/* Ações (Editar, Deletar, Replicar) */}
                     <View style={styles.actionsRow}>
                       <TouchableOpacity
                         onPress={() => handleEditExpense(item)}
@@ -651,6 +657,7 @@ export default function TransactionsList({
                 scrollEnabled={false}
                 renderItem={({ item }) => (
                   <View style={styles.itemRow}>
+                    {/* Ícone */}
                     <View
                       style={[
                         styles.iconBox,
@@ -664,19 +671,23 @@ export default function TransactionsList({
                       />
                     </View>
 
+                    {/* Detalhes (Nome, Data e Valor juntos) */}
                     <View style={styles.itemDetails}>
                       <Text style={styles.itemName} numberOfLines={1}>
                         {item.nameRevenue}
                       </Text>
-                      <Text style={styles.itemDate}>
-                        {formatDate(item.dateRevenue)}
-                      </Text>
+
+                      <View style={styles.dateAndAmountRow}>
+                        <Text style={styles.itemDate}>
+                          {formatDate(item.dateRevenue)}
+                        </Text>
+                        <Text style={styles.itemAmount}>
+                          {formatCurrency(item.valueRevenue)}
+                        </Text>
+                      </View>
                     </View>
 
-                    <Text style={styles.itemAmount}>
-                      {formatCurrency(item.valueRevenue)}
-                    </Text>
-
+                    {/* Ações (Editar, Deletar, Replicar) */}
                     <View style={styles.actionsRow}>
                       <TouchableOpacity
                         onPress={() => handleEditRevenue(item)}
