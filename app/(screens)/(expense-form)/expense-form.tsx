@@ -84,16 +84,18 @@ export default function FormExpenseScreen() {
   };
 
   const closeAlert = () => {
-    const navigationCallback = alertConfig.onClose;
+    const callback = alertConfig.onClose;
+    setAlertConfig({
+      visible: false,
+      title: "",
+      message: "",
+      onClose: undefined,
+    });
 
-    // 1. Oculta a modal primeiro
-    setAlertConfig((prev) => ({ ...prev, visible: false }));
-
-    // 2. Se houver callback (ex: router.back()), aguarda a animação fechar
-    if (navigationCallback) {
+    if (callback) {
       setTimeout(() => {
-        navigationCallback();
-      }, 150); // 150ms é o suficiente para o unmount do fade
+        callback();
+      }, 200);
     }
   };
 
@@ -159,7 +161,9 @@ export default function FormExpenseScreen() {
 
   const formatCurrency = (value: string) => {
     const cleanValue = value.replace(/\D/g, "");
-    const numericValue = parseInt(cleanValue || "0", 10) / 100;
+    if (!cleanValue) return "";
+
+    const numericValue = parseInt(cleanValue, 10) / 100;
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -183,15 +187,20 @@ export default function FormExpenseScreen() {
   };
 
   const handleSave = async () => {
-    if (!nameExpense || !valueExpense) {
-      showAlert("Atenção", "Preencha os campos obrigatórios.");
+    const numericValue = parseFloat(valueExpense.replace(/\D/g, "")) / 100;
+
+    if (
+      !nameExpense.trim() ||
+      !valueExpense ||
+      isNaN(numericValue) ||
+      numericValue <= 0
+    ) {
+      showAlert("Atenção", "Preencha o nome e um valor válido maior que zero.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const numericValue = parseFloat(valueExpense.replace(/\D/g, "")) / 100;
-
       let isoDate = new Date().toISOString();
       if (displayDate.length === 10) {
         const [day, month, year] = displayDate.split("/");
@@ -302,6 +311,7 @@ export default function FormExpenseScreen() {
               placeholderTextColor={colors.gray}
               value={nameExpense}
               onChangeText={setNameExpense}
+              maxLength={60}
               style={styles.input}
             />
 
@@ -309,6 +319,7 @@ export default function FormExpenseScreen() {
               placeholder="Valor da despesa"
               placeholderTextColor={colors.gray}
               keyboardType="numeric"
+              maxLength={18}
               value={valueExpense}
               onChangeText={(val) => setValueExpense(formatCurrency(val))}
               style={styles.input}
@@ -331,6 +342,7 @@ export default function FormExpenseScreen() {
               onChangeText={setAnotation}
               multiline
               numberOfLines={4}
+              maxLength={255}
               style={[styles.input, styles.textArea]}
             />
 
@@ -408,7 +420,7 @@ export default function FormExpenseScreen() {
         </View>
       </Modal>
 
-      {/* Novo Modal de Alerta */}
+      {/* Modal de Alerta */}
       <AlertModal
         visible={alertConfig.visible}
         title={alertConfig.title}

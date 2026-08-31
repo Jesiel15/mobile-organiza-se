@@ -50,14 +50,14 @@ export default function FormRevenueScreen() {
   const [valueRevenue, setValueRevenue] = useState("");
   const [displayDate, setDisplayDate] = useState("");
   const [anotation, setAnotation] = useState("");
-  const [color, setColor] = useState(colors.green || "#48BB78");
-  const [icon, setIcon] = useState<string>("wallet-outline");
+  const [color, setColor] = useState(colors.green || "#2e7d32");
+  const [icon, setIcon] = useState<string>("cash-outline");
 
-  // Modais / Popovers
+  // Popovers
   const [showIconModal, setShowIconModal] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
-  // Estado para o AlertModal
+  // Estado para a AlertModal
   const [alertConfig, setAlertConfig] = useState<{
     visible: boolean;
     title: string;
@@ -79,18 +79,21 @@ export default function FormRevenueScreen() {
   };
 
   const closeAlert = () => {
-    const navigationCallback = alertConfig.onClose;
+    const callback = alertConfig.onClose;
+    setAlertConfig({
+      visible: false,
+      title: "",
+      message: "",
+      onClose: undefined,
+    });
 
-    // 1. Oculta a modal primeiro
-    setAlertConfig((prev) => ({ ...prev, visible: false }));
-
-    // 2. Se houver callback (ex: router.back()), aguarda a animação fechar
-    if (navigationCallback) {
+    if (callback) {
       setTimeout(() => {
-        navigationCallback();
-      }, 150); // 150ms é o suficiente para o unmount do fade
+        callback();
+      }, 200);
     }
   };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -111,8 +114,8 @@ export default function FormRevenueScreen() {
     setValueRevenue("");
     setDisplayDate(new Date().toLocaleDateString("pt-BR"));
     setAnotation("");
-    setColor(colors.green || "#48BB78");
-    setIcon("wallet-outline");
+    setColor(colors.green || "#2e7d32");
+    setIcon("cash-outline");
   };
 
   const loadRevenueData = async (isMounted: boolean) => {
@@ -123,20 +126,15 @@ export default function FormRevenueScreen() {
 
       if (!isMounted) return;
 
-      setNameRevenue(revenue.nameRevenue || revenue.nameExpense || "");
+      setNameRevenue(revenue.nameRevenue || "");
 
-      const rawValue =
-        revenue.valueRevenue || revenue.valueExpense
-          ? Math.round(
-              (revenue.valueRevenue || revenue.valueExpense) * 100
-            ).toString()
-          : "0";
+      const rawValue = revenue.valueRevenue
+        ? Math.round(revenue.valueRevenue * 100).toString()
+        : "0";
       setValueRevenue(formatCurrency(rawValue));
 
-      if (revenue.dateRevenue || revenue.dateExpense) {
-        const rawDate = (revenue.dateRevenue || revenue.dateExpense).split(
-          "T"
-        )[0];
+      if (revenue.dateRevenue) {
+        const rawDate = revenue.dateRevenue.split("T")[0];
         const [year, month, day] = rawDate.split("-");
         if (year && month && day) {
           setDisplayDate(`${day}/${month}/${year}`);
@@ -144,8 +142,8 @@ export default function FormRevenueScreen() {
       }
 
       setAnotation(revenue.anotation || "");
-      setColor(revenue.color || colors.green || "#48BB78");
-      setIcon(revenue.icon || "wallet-outline");
+      setColor(revenue.color || colors.green || "#2e7d32");
+      setIcon(revenue.icon || "cash-outline");
     } catch (error) {
       console.error("Erro ao carregar receita:", error);
       showAlert("Erro", "Não foi possível carregar os dados da receita.", () =>
@@ -158,7 +156,9 @@ export default function FormRevenueScreen() {
 
   const formatCurrency = (value: string) => {
     const cleanValue = value.replace(/\D/g, "");
-    const numericValue = parseInt(cleanValue || "0", 10) / 100;
+    if (!cleanValue) return "";
+
+    const numericValue = parseInt(cleanValue, 10) / 100;
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -182,15 +182,20 @@ export default function FormRevenueScreen() {
   };
 
   const handleSave = async () => {
-    if (!nameRevenue || !valueRevenue) {
-      showAlert("Atenção", "Preencha os campos obrigatórios.");
+    const numericValue = parseFloat(valueRevenue.replace(/\D/g, "")) / 100;
+
+    if (
+      !nameRevenue.trim() ||
+      !valueRevenue ||
+      isNaN(numericValue) ||
+      numericValue <= 0
+    ) {
+      showAlert("Atenção", "Preencha o nome e um valor válido maior que zero.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const numericValue = parseFloat(valueRevenue.replace(/\D/g, "")) / 100;
-
       let isoDate = new Date().toISOString();
       if (displayDate.length === 10) {
         const [day, month, year] = displayDate.split("/");
@@ -301,6 +306,7 @@ export default function FormRevenueScreen() {
               placeholderTextColor={colors.gray}
               value={nameRevenue}
               onChangeText={setNameRevenue}
+              maxLength={60}
               style={styles.input}
             />
 
@@ -308,6 +314,7 @@ export default function FormRevenueScreen() {
               placeholder="Valor da receita"
               placeholderTextColor={colors.gray}
               keyboardType="numeric"
+              maxLength={18}
               value={valueRevenue}
               onChangeText={(val) => setValueRevenue(formatCurrency(val))}
               style={styles.input}
@@ -330,6 +337,7 @@ export default function FormRevenueScreen() {
               onChangeText={setAnotation}
               multiline
               numberOfLines={4}
+              maxLength={255}
               style={[styles.input, styles.textArea]}
             />
 
@@ -407,7 +415,7 @@ export default function FormRevenueScreen() {
         </View>
       </Modal>
 
-      {/* Modal de Alerta Customizado */}
+      {/* Modal de Alerta */}
       <AlertModal
         visible={alertConfig.visible}
         title={alertConfig.title}
