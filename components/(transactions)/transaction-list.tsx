@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   ScrollView,
   Text,
@@ -15,6 +14,7 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 import { getTransactionsStyles } from "@/styles/(components)/transactions-lists.styles";
+import ConfirmModal from "../(confirm-modal)/confirm-modal";
 import SummaryCards from "../(summary)/summary-cards";
 
 export interface Expense {
@@ -41,6 +41,15 @@ interface TransactionsListProps {
   onNavigateToAddRevenue?: () => void;
   onNavigateToEditExpense?: (monthYear: string, id: string) => void;
   onNavigateToEditRevenue?: (monthYear: string, id: string) => void;
+}
+
+interface ModalConfig {
+  visible: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => void;
 }
 
 const MONTHS_LIST = [
@@ -77,6 +86,18 @@ export default function TransactionsList({
 
   const [monthYearFilter, setMonthYearFilter] = useState<Date>(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
+
+  // Estado unificado para controle do ConfirmModal
+  const [modalConfig, setModalConfig] = useState<ModalConfig>({
+    visible: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, visible: false }));
+  };
 
   const totalExpenses = expenses.reduce(
     (acc, item) => acc + item.valueExpense,
@@ -240,59 +261,60 @@ export default function TransactionsList({
           item.id === expense.id ? { ...item, isPaid: expense.isPaid } : item
         )
       );
-      Alert.alert("Erro", "Não foi possível atualizar o status da despesa.");
     }
   };
 
   const deleteExpense = async (expense: Expense) => {
+    closeModal();
     setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(new Date(expense.dateExpense));
       await api.delete(`/expenses/${monthYear}/${expense.id}`);
       loadInitialData();
     } catch (err) {
-      Alert.alert("Erro", "Falha ao excluir despesa.");
+      console.error("Falha ao excluir despesa", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const deleteRevenue = async (revenue: Revenue) => {
+    closeModal();
     setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(new Date(revenue.dateRevenue));
       await api.delete(`/revenues/${monthYear}/${revenue.id}`);
       loadInitialData();
     } catch (err) {
-      Alert.alert("Erro", "Falha ao excluir receita.");
+      console.error("Falha ao excluir receita", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const replicateExpense = async (expense: Expense) => {
+    closeModal();
     setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(new Date(expense.dateExpense));
       await api.post(`/expenses/${monthYear}/${expense.id}/replicate`);
-      Alert.alert("Sucesso", "Despesa replicada para o próximo mês!");
       loadInitialData();
     } catch (err) {
-      Alert.alert("Erro", "Falha ao replicar despesa.");
+      console.error("Falha ao replicar despesa", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const replicateRevenue = async (revenue: Revenue) => {
+    closeModal();
     setIsLoading(true);
     try {
       const monthYear = getMonthYearKey(new Date(revenue.dateRevenue));
       await api.post(`/revenues/${monthYear}/${revenue.id}/replicate`);
-      Alert.alert("Sucesso", "Receita replicada para o próximo mês!");
       loadInitialData();
     } catch (err) {
-      Alert.alert("Erro", "Falha ao replicar receita.");
+      console.error("Falha ao replicar receita", err);
     } finally {
       setIsLoading(false);
     }
@@ -312,48 +334,49 @@ export default function TransactionsList({
     onNavigateToEditRevenue?.(monthYear, revenue.id);
   };
 
+  // Funções de confirmação utilizando o ConfirmModal
   const confirmDeleteExpense = (expense: Expense) => {
-    Alert.alert("Excluir despesa", `Deseja excluir "${expense.nameExpense}"?`, [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Confirmar",
-        style: "destructive",
-        onPress: () => deleteExpense(expense),
-      },
-    ]);
+    setModalConfig({
+      visible: true,
+      title: "Excluir despesa",
+      message: `Deseja excluir "${expense.nameExpense}"?`,
+      confirmText: "Excluir",
+      cancelText: "Cancelar",
+      onConfirm: () => deleteExpense(expense),
+    });
   };
 
   const confirmDeleteRevenue = (revenue: Revenue) => {
-    Alert.alert("Excluir receita", `Deseja excluir "${revenue.nameRevenue}"?`, [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Confirmar",
-        style: "destructive",
-        onPress: () => deleteRevenue(revenue),
-      },
-    ]);
+    setModalConfig({
+      visible: true,
+      title: "Excluir receita",
+      message: `Deseja excluir "${revenue.nameRevenue}"?`,
+      confirmText: "Excluir",
+      cancelText: "Cancelar",
+      onConfirm: () => deleteRevenue(revenue),
+    });
   };
 
   const confirmReplicateExpense = (expense: Expense) => {
-    Alert.alert(
-      "Replicar despesa",
-      `Replicar "${expense.nameExpense}" para o próximo mês?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Confirmar", onPress: () => replicateExpense(expense) },
-      ]
-    );
+    setModalConfig({
+      visible: true,
+      title: "Replicar despesa",
+      message: `Replicar "${expense.nameExpense}" para o próximo mês?`,
+      confirmText: "Replicar",
+      cancelText: "Cancelar",
+      onConfirm: () => replicateExpense(expense),
+    });
   };
 
   const confirmReplicateRevenue = (revenue: Revenue) => {
-    Alert.alert(
-      "Replicar receita",
-      `Replicar "${revenue.nameRevenue}" para o próximo mês?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Confirmar", onPress: () => replicateRevenue(revenue) },
-      ]
-    );
+    setModalConfig({
+      visible: true,
+      title: "Replicar receita",
+      message: `Replicar "${revenue.nameRevenue}" para o próximo mês?`,
+      confirmText: "Replicar",
+      cancelText: "Cancelar",
+      onConfirm: () => replicateRevenue(revenue),
+    });
   };
 
   const currentSelectedMonth = monthYearFilter.getMonth();
@@ -379,310 +402,333 @@ export default function TransactionsList({
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Componente de Resumo de Totais */}
-      <SummaryCards
-        totalExpenses={totalExpenses}
-        totalRevenues={totalRevenues}
-      />
-
-      {isLoading && (
-        <ActivityIndicator
-          size="large"
-          color={colors.primary}
-          style={styles.loader}
+    <>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <SummaryCards
+          totalExpenses={totalExpenses}
+          totalRevenues={totalRevenues}
         />
-      )}
 
-      {/* Seletor Customizado de Mês/Ano */}
-      <View style={styles.filterContainer}>
-        <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
+        {isLoading && (
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+            style={styles.loader}
+          />
+        )}
 
-        <TouchableOpacity
-          style={styles.customPickerTrigger}
-          activeOpacity={0.7}
-          onPress={() => setShowMonthPicker((prev) => !prev)}
-        >
-          <Text style={styles.customPickerText}>
-            {monthYearFilter.toLocaleDateString("pt-BR", {
-              month: "long",
-              year: "numeric",
-            })}
-          </Text>
+        <View style={styles.filterContainer}>
+          <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
 
-          <View style={styles.iconContainer}>
-            <Ionicons name="calendar-outline" size={20} color={colors.black} />
-          </View>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.customPickerTrigger}
+            activeOpacity={0.7}
+            onPress={() => setShowMonthPicker((prev) => !prev)}
+          >
+            <Text style={styles.customPickerText}>
+              {monthYearFilter.toLocaleDateString("pt-BR", {
+                month: "long",
+                year: "numeric",
+              })}
+            </Text>
 
-        {showMonthPicker && (
-          <View style={styles.popoverCard}>
-            <View style={styles.popoverHeader}>
-              <TouchableOpacity
-                onPress={() => handleYearChange(-1)}
-                style={styles.arrowButton}
-              >
-                <Ionicons name="chevron-back" size={18} color={colors.gray} />
-              </TouchableOpacity>
-              <Text style={styles.popoverYearText}>{currentSelectedYear}</Text>
-              <TouchableOpacity
-                onPress={() => handleYearChange(1)}
-                style={styles.arrowButton}
-              >
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={colors.gray}
-                />
-              </TouchableOpacity>
+            <View style={styles.iconContainer}>
+              <Ionicons
+                name="calendar-outline"
+                size={20}
+                color={colors.black}
+              />
             </View>
+          </TouchableOpacity>
 
-            <View style={styles.monthsGrid}>
-              {MONTHS_LIST.map((monthName, index) => {
-                const isSelected = index === currentSelectedMonth;
-                return (
-                  <TouchableOpacity
-                    key={monthName}
-                    style={[
-                      styles.monthGridItem,
-                      isSelected && styles.monthGridItemSelected,
-                    ]}
-                    onPress={() => handleSelectMonth(index)}
-                  >
-                    <Text
+          {showMonthPicker && (
+            <View style={styles.popoverCard}>
+              <View style={styles.popoverHeader}>
+                <TouchableOpacity
+                  onPress={() => handleYearChange(-1)}
+                  style={styles.arrowButton}
+                >
+                  <Ionicons name="chevron-back" size={18} color={colors.gray} />
+                </TouchableOpacity>
+                <Text style={styles.popoverYearText}>
+                  {currentSelectedYear}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => handleYearChange(1)}
+                  style={styles.arrowButton}
+                >
+                  <Ionicons
+                    name="chevron-forward"
+                    size={18}
+                    color={colors.gray}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.monthsGrid}>
+                {MONTHS_LIST.map((monthName, index) => {
+                  const isSelected = index === currentSelectedMonth;
+                  return (
+                    <TouchableOpacity
+                      key={monthName}
                       style={[
-                        styles.monthGridText,
-                        isSelected && styles.monthGridTextSelected,
+                        styles.monthGridItem,
+                        isSelected && styles.monthGridItemSelected,
+                      ]}
+                      onPress={() => handleSelectMonth(index)}
+                    >
+                      <Text
+                        style={[
+                          styles.monthGridText,
+                          isSelected && styles.monthGridTextSelected,
+                        ]}
+                      >
+                        {monthName}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <View style={styles.popoverFooter}>
+                <TouchableOpacity onPress={handleSetCurrentMonth}>
+                  <Text style={styles.footerActionText}>Este mês</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.listsWrapper}>
+          {/* Bloco de Despesas */}
+          <View style={styles.columnContainer}>
+            <Text style={styles.sectionTitle}>Despesas</Text>
+
+            <View style={styles.cardSection}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  saveFilterState();
+                  onNavigateToAddExpense?.();
+                }}
+              >
+                <Text style={styles.addButtonText}>Adicionar despesa</Text>
+              </TouchableOpacity>
+
+              <FlatList
+                data={expenses}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+                renderItem={({ item }) => (
+                  <View style={styles.itemRow}>
+                    <TouchableOpacity
+                      onPress={() => toggleExpensePaidStatus(item)}
+                      activeOpacity={0.7}
+                    >
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 6,
+                          borderWidth: 1.5,
+                          borderColor: colors.checkmarkOut,
+                          backgroundColor: item.isPaid
+                            ? colors.checkmarkOut
+                            : "transparent",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        {item.isPaid && (
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color={colors.checkmark}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+
+                    <View
+                      style={[
+                        styles.iconBox,
+                        { backgroundColor: item.color || colors.primary },
                       ]}
                     >
-                      {monthName}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            <View style={styles.popoverFooter}>
-              <TouchableOpacity onPress={handleSetCurrentMonth}>
-                <Text style={styles.footerActionText}>Este mês</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.listsWrapper}>
-        {/* Bloco de Despesas */}
-        <View style={styles.columnContainer}>
-          <Text style={styles.sectionTitle}>Despesas</Text>
-
-          <View style={styles.cardSection}>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => {
-                saveFilterState();
-                onNavigateToAddExpense?.();
-              }}
-            >
-              <Text style={styles.addButtonText}>Adicionar despesa</Text>
-            </TouchableOpacity>
-
-            <FlatList
-              data={expenses}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              renderItem={({ item }) => (
-                <View style={styles.itemRow}>
-                  <TouchableOpacity
-                    onPress={() => toggleExpensePaidStatus(item)}
-                    activeOpacity={0.7}
-                  >
-                    <View
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 6, // Controla a curvatura dos cantos de ambos
-                        borderWidth: 1.5, // Controla a espessura da linha de ambos
-                        borderColor: colors.checkmarkOut,
-                        backgroundColor: item.isPaid
-                          ? colors.checkmarkOut
-                          : "transparent",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      {item.isPaid && (
-                        <Ionicons
-                          name="checkmark"
-                          size={16} // Ajuste o tamanho do ícone interno conforme necessário
-                          color={colors.checkmark} // Cor da marquinha do check
-                        />
-                      )}
+                      <Ionicons
+                        name={getValidIconName(item.icon, "barcode-outline")}
+                        size={28}
+                        color="#fff"
+                      />
                     </View>
-                  </TouchableOpacity>
 
-                  <View
-                    style={[
-                      styles.iconBox,
-                      { backgroundColor: item.color || colors.primary },
-                    ]}
-                  >
-                    <Ionicons
-                      name={getValidIconName(item.icon, "barcode-outline")}
-                      size={28}
-                      color="#fff"
-                    />
-                  </View>
+                    <View style={styles.itemDetails}>
+                      <Text
+                        style={[
+                          styles.itemName,
+                          item.isPaid && styles.paidText,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {item.nameExpense}
+                      </Text>
+                      <Text style={styles.itemDate}>
+                        {formatDate(item.dateExpense)}
+                      </Text>
+                    </View>
 
-                  <View style={styles.itemDetails}>
                     <Text
-                      style={[styles.itemName, item.isPaid && styles.paidText]}
-                      numberOfLines={1}
+                      style={[
+                        styles.itemAmount,
+                        item.isPaid && styles.paidText,
+                      ]}
                     >
-                      {item.nameExpense}
+                      {formatCurrency(item.valueExpense)}
                     </Text>
-                    <Text style={styles.itemDate}>
-                      {formatDate(item.dateExpense)}
+
+                    <View style={styles.actionsRow}>
+                      <TouchableOpacity
+                        onPress={() => handleEditExpense(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons
+                          name="create-outline"
+                          size={22}
+                          color={colors.neonGreen}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => confirmDeleteExpense(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons
+                          name="remove-circle-outline"
+                          size={22}
+                          color={colors.red}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => confirmReplicateExpense(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons
+                          name="arrow-forward-outline"
+                          size={22}
+                          color={colors.blue}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              />
+            </View>
+          </View>
+
+          {/* Bloco de Receitas */}
+          <View style={styles.columnContainer}>
+            <Text style={styles.sectionTitle}>Receitas/Salários</Text>
+
+            <View style={styles.cardSection}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  saveFilterState();
+                  onNavigateToAddRevenue?.();
+                }}
+              >
+                <Text style={styles.addButtonText}>Adicionar receita</Text>
+              </TouchableOpacity>
+
+              <FlatList
+                data={revenues}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+                renderItem={({ item }) => (
+                  <View style={styles.itemRow}>
+                    <View
+                      style={[
+                        styles.iconBox,
+                        { backgroundColor: item.color || "#D92D20" },
+                      ]}
+                    >
+                      <Ionicons
+                        name={getValidIconName(item.icon, "cash-outline")}
+                        size={16}
+                        color="#fff"
+                      />
+                    </View>
+
+                    <View style={styles.itemDetails}>
+                      <Text style={styles.itemName} numberOfLines={1}>
+                        {item.nameRevenue}
+                      </Text>
+                      <Text style={styles.itemDate}>
+                        {formatDate(item.dateRevenue)}
+                      </Text>
+                    </View>
+
+                    <Text style={styles.itemAmount}>
+                      {formatCurrency(item.valueRevenue)}
                     </Text>
+
+                    <View style={styles.actionsRow}>
+                      <TouchableOpacity
+                        onPress={() => handleEditRevenue(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons
+                          name="create-outline"
+                          size={22}
+                          color={colors.neonGreen}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => confirmDeleteRevenue(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons
+                          name="remove-circle-outline"
+                          size={22}
+                          color={colors.red}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => confirmReplicateRevenue(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons
+                          name="arrow-forward-outline"
+                          size={22}
+                          color={colors.blue}
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-
-                  <Text
-                    style={[styles.itemAmount, item.isPaid && styles.paidText]}
-                  >
-                    {formatCurrency(item.valueExpense)}
-                  </Text>
-
-                  <View style={styles.actionsRow}>
-                    <TouchableOpacity
-                      onPress={() => handleEditExpense(item)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Ionicons
-                        name="create-outline"
-                        size={22}
-                        color={colors.neonGreen}
-                      />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={() => confirmDeleteExpense(item)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Ionicons
-                        name="remove-circle-outline"
-                        size={22}
-                        color={colors.red}
-                      />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={() => confirmReplicateExpense(item)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Ionicons
-                        name="arrow-forward-outline"
-                        size={22}
-                        color={colors.blue}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-            />
+                )}
+              />
+            </View>
           </View>
         </View>
+      </ScrollView>
 
-        {/* Bloco de Receitas */}
-        <View style={styles.columnContainer}>
-          <Text style={styles.sectionTitle}>Receitas/Salários</Text>
-
-          <View style={styles.cardSection}>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => {
-                saveFilterState();
-                onNavigateToAddRevenue?.();
-              }}
-            >
-              <Text style={styles.addButtonText}>Adicionar receita</Text>
-            </TouchableOpacity>
-
-            <FlatList
-              data={revenues}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              renderItem={({ item }) => (
-                <View style={styles.itemRow}>
-                  <View
-                    style={[
-                      styles.iconBox,
-                      { backgroundColor: item.color || "#D92D20" },
-                    ]}
-                  >
-                    <Ionicons
-                      name={getValidIconName(item.icon, "cash-outline")}
-                      size={16}
-                      color="#fff"
-                    />
-                  </View>
-
-                  <View style={styles.itemDetails}>
-                    <Text style={styles.itemName} numberOfLines={1}>
-                      {item.nameRevenue}
-                    </Text>
-                    <Text style={styles.itemDate}>
-                      {formatDate(item.dateRevenue)}
-                    </Text>
-                  </View>
-
-                  <Text style={styles.itemAmount}>
-                    {formatCurrency(item.valueRevenue)}
-                  </Text>
-
-                  <View style={styles.actionsRow}>
-                    <TouchableOpacity
-                      onPress={() => handleEditRevenue(item)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Ionicons
-                        name="create-outline"
-                        size={22}
-                        color={colors.neonGreen}
-                      />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={() => confirmDeleteRevenue(item)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Ionicons
-                        name="remove-circle-outline"
-                        size={22}
-                        color={colors.red}
-                      />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={() => confirmReplicateRevenue(item)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Ionicons
-                        name="arrow-forward-outline"
-                        size={22}
-                        color={colors.blue}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-            />
-          </View>
-        </View>
-      </View>
-    </ScrollView>
+      {/* Modal Genérico de Confirmação para Web e Mobile */}
+      <ConfirmModal
+        visible={modalConfig.visible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onCancel={closeModal}
+        onConfirm={modalConfig.onConfirm}
+      />
+    </>
   );
 }
