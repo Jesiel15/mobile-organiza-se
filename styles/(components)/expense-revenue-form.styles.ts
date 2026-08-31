@@ -77,15 +77,7 @@ export const getExpenseRevenueFormStyles = (
       maxWidth: 320,
       // borderWidth: 1,
       // borderColor: colors.surfaceBorder,
-      boxShadow: [
-        {
-          offsetX: 2,
-          offsetY: 4,
-          blurRadius: 4,
-          spreadDistance: 0,
-          color: "rgba(0, 0, 0, 0.1)",
-        },
-      ],
+      boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
     },
     colorPickerTitle: {
       color: colors.textColor,
@@ -118,15 +110,7 @@ export const getExpenseRevenueFormStyles = (
       fontSize: 16,
       marginBottom: 16,
       marginLeft: isMobile ? 0 : 26,
-      boxShadow: [
-        {
-          offsetX: 2,
-          offsetY: 4,
-          blurRadius: 4,
-          spreadDistance: 0,
-          color: "rgba(0, 0, 0, 0.1)",
-        },
-      ],
+      boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
     },
     dateInput: {
       width: isMobile ? "100%" : 180,

@@ -19,6 +19,7 @@ interface AuthContextType {
     password: string;
   }) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (updatedData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -48,7 +49,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    // POST /login
     const response = await api.post("/login", { email, password });
     const { token: userToken, user: userData } = response.data;
 
@@ -68,7 +68,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: string;
     password: string;
   }) => {
-    // POST /register
     const response = await api.post("/register", { name, email, password });
     const { token: userToken, user: userData } = response.data;
 
@@ -86,9 +85,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
   };
 
+  const updateUser = async (updatedData: Partial<User>) => {
+    if (!user) return;
+
+    const newUserData = { ...user, ...updatedData };
+    setUser(newUserData);
+    await AsyncStorage.setItem("user", JSON.stringify(newUserData));
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, signIn, signUp, signOut }}
+      value={{
+        user,
+        token,
+        isLoading,
+        signIn,
+        signUp,
+        signOut,
+        updateUser,
+      }}
     >
       {children}
     </AuthContext.Provider>
