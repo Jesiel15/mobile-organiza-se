@@ -23,20 +23,22 @@ interface ThemeContextData {
 const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useColorScheme(); // "light" | "dark" | null
+  const systemScheme = useColorScheme();
 
-  // Começa seguindo o tema do sistema até carregarmos a preferência salva.
   const [theme, setThemeState] = useState<ThemeName>(
     systemScheme === "dark" ? "dark" : "light"
   );
   const [isThemeLoading, setIsThemeLoading] = useState(true);
 
-  // Carrega o tema salvo assim que o app abre.
   useEffect(() => {
     (async () => {
       try {
-        const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (savedTheme === "light" || savedTheme === "dark") {
+        const savedTheme = (await AsyncStorage.getItem(
+          THEME_STORAGE_KEY
+        )) as ThemeName | null;
+
+        // Valida se o tema salvo é uma chave válida do seu objeto themes (incluindo 'blue')
+        if (savedTheme && savedTheme in themes) {
           setThemeState(savedTheme);
         }
       } catch (error) {
@@ -47,7 +49,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  // Troca o tema em memória e já persiste no dispositivo.
   const setTheme = (newTheme: ThemeName) => {
     setThemeState(newTheme);
     AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme).catch((error) => {
