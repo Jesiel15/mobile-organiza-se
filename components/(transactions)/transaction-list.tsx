@@ -646,29 +646,36 @@ export default function TransactionsList({
                   </Text>
 
                   <View style={styles.actionsRow}>
-                    <TouchableOpacity onPress={() => handleEditRevenue(item)}>
+                    <TouchableOpacity
+                      onPress={() => handleEditRevenue(item)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
                       <Ionicons
                         name="create-outline"
-                        size={16}
-                        color={colors.gray}
+                        size={22}
+                        color={colors.neonGreen}
                       />
                     </TouchableOpacity>
+
                     <TouchableOpacity
                       onPress={() => confirmDeleteRevenue(item)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                       <Ionicons
                         name="remove-circle-outline"
-                        size={16}
-                        color="#F04438"
+                        size={22}
+                        color={colors.red}
                       />
                     </TouchableOpacity>
+
                     <TouchableOpacity
                       onPress={() => confirmReplicateRevenue(item)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                       <Ionicons
                         name="arrow-forward-outline"
-                        size={16}
-                        color={colors.primary}
+                        size={22}
+                        color={colors.blue}
                       />
                     </TouchableOpacity>
                   </View>
