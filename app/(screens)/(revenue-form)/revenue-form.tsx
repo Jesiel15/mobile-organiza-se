@@ -354,7 +354,7 @@ export default function FormRevenueScreen() {
                   <Ionicons
                     name={item as any}
                     size={24}
-                    color={colors.primary}
+                    color={colors.iconeOutColor}
                   />
                 </TouchableOpacity>
               ))}

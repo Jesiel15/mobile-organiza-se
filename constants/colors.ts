@@ -3,6 +3,8 @@
 // pra manter os dois projetos com a mesma identidade visual.
 
 export interface ThemeColors {
+  iconeOutColor: string;
+  iconeColor: string;
   checkmarkOut: string;
   checkmark: string;
 
@@ -41,6 +43,8 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
+  iconeOutColor: "#ffffff",
+  iconeColor: "#377cc8",
   checkmarkOut: "#848484",
   checkmark: "#ffffff",
 
@@ -78,6 +82,8 @@ export const lightColors: ThemeColors = {
 };
 
 export const darkColors: ThemeColors = {
+  iconeOutColor: "#848484",
+  iconeColor: "#ffffff",
   checkmarkOut: "#ffffff",
   checkmark: "#404040",
 
@@ -116,6 +122,8 @@ export const darkColors: ThemeColors = {
 };
 
 export const blueColors: ThemeColors = {
+  iconeOutColor: "#ffffff",
+  iconeColor: "#285f9e",
   checkmarkOut: "#2881e4",
   checkmark: "#ffffff",
   // Brand colours

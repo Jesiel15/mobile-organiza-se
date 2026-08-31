@@ -355,7 +355,7 @@ export default function FormExpenseScreen() {
                   <Ionicons
                     name={item as any}
                     size={24}
-                    color={colors.primary}
+                    color={colors.iconeOutColor}
                   />
                 </TouchableOpacity>
               ))}

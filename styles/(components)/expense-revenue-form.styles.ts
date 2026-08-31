@@ -185,7 +185,7 @@ export const getExpenseRevenueFormStyles = (
       borderColor: colors.lineColor,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: colors.backgroundHome,
+      backgroundColor: colors.iconeColor,
     },
     iconTileSelected: {
       borderColor: colors.primary,
