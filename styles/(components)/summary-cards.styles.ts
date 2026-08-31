@@ -7,7 +7,7 @@ export const getSummaryCardsStyles = (colors: ThemeColors, isMobile: boolean) =>
       flexDirection: isMobile ? "column" : "row",
       gap: 16,
       marginBottom: 24,
-      width: isMobile ? "100%" : "50%",
+      width: isMobile ? "100%" : "75%",
     },
     card: {
       flex: 1,
