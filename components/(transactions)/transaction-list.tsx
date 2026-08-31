@@ -507,9 +507,7 @@ export default function TransactionsList({
                         height: 24,
                         borderRadius: 6, // Controla a curvatura dos cantos de ambos
                         borderWidth: 1.5, // Controla a espessura da linha de ambos
-                        borderColor: item.isPaid
-                          ? colors.checkmarkOut
-                          : colors.surfaceBorder,
+                        borderColor: colors.checkmarkOut,
                         backgroundColor: item.isPaid
                           ? colors.checkmarkOut
                           : "transparent",
