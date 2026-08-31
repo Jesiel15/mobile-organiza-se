@@ -30,7 +30,6 @@ export default function SettingsScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [isEditingName, setIsEditingName] = useState(false);
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
 
   useEffect(() => {
@@ -41,28 +40,21 @@ export default function SettingsScreen() {
   }, [user]);
 
   const handleSave = async () => {
-    if (isEditingName || isEditingEmail) {
-      if (isEditingName && !name.trim()) {
+    // 1. Atualização apenas do Nome
+    if (isEditingName) {
+      if (!name.trim()) {
         Alert.alert("Erro", "O campo Nome não pode ficar vazio.");
         return;
       }
-      if (isEditingEmail && !email.trim()) {
-        Alert.alert("Erro", "O campo Email não pode ficar vazio.");
-        return;
-      }
-
-      const payload: Record<string, string> = {};
-      if (isEditingName) payload.name = name;
-      if (isEditingEmail) payload.email = email;
 
       try {
+        const payload = { name };
         const response = await api.patch("/user/emailname", payload);
         const updatedUser = response.data?.user || payload;
 
         await updateUser(updatedUser);
 
         setIsEditingName(false);
-        setIsEditingEmail(false);
         Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
       } catch (err: any) {
         Alert.alert(
@@ -72,6 +64,7 @@ export default function SettingsScreen() {
       }
     }
 
+    // 2. Atualização de Senha
     if (isEditingPassword) {
       if (!password || !newPassword || !confirmPassword) {
         Alert.alert("Erro", "Preencha todos os campos de senha.");
@@ -113,19 +106,15 @@ export default function SettingsScreen() {
     setConfirmPassword("");
 
     setIsEditingName(false);
-    setIsEditingEmail(false);
     setIsEditingPassword(false);
   };
 
-  const isAnyFieldEditing =
-    isEditingName || isEditingEmail || isEditingPassword;
+  const isAnyFieldEditing = isEditingName || isEditingPassword;
 
   return (
     <View style={styles.container}>
-      {/* 1. Sidebar inserido na raiz do layout */}
       <Sidebar activeScreen="Configurações" />
 
-      {/* 2. Conteúdo da tela */}
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Configurações</Text>
         <Text style={styles.subtitle}>
@@ -181,6 +170,7 @@ export default function SettingsScreen() {
 
         <Text style={styles.sectionTitle}>Dados Pessoais</Text>
 
+        {/* Input Nome (Editável) */}
         <View style={styles.inputGroup}>
           <TextInput
             style={[styles.input, !isEditingName && styles.inputDisabled]}
@@ -203,30 +193,28 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Input E-mail (Apenas Leitura / Desabilitado) */}
         <View style={styles.inputGroup}>
           <TextInput
-            style={[styles.input, !isEditingEmail && styles.inputDisabled]}
+            style={[styles.input, styles.inputDisabled]}
             value={email}
-            onChangeText={setEmail}
-            editable={isEditingEmail}
-            pointerEvents={isEditingEmail ? "auto" : "none"}
+            editable={false}
+            pointerEvents="none"
             placeholder="E-mail do usuário"
             placeholderTextColor={colors.gray}
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <TouchableOpacity
-            style={styles.editIconButton}
-            onPress={() => setIsEditingEmail(!isEditingEmail)}
+          {/* Botão invisível reservando o tamanho exato do espaço */}
+          <View
+            style={[styles.editIconButton, { opacity: 0 }]}
+            pointerEvents="none"
           >
-            <Ionicons
-              name={isEditingEmail ? "close" : "pencil"}
-              size={20}
-              color={isEditingEmail ? colors.red : colors.neonGreen}
-            />
-          </TouchableOpacity>
+            <Ionicons name="pencil" size={20} color="transparent" />
+          </View>
         </View>
 
+        {/* Input Senha */}
         <View style={styles.inputGroup}>
           <TextInput
             style={[styles.input, !isEditingPassword && styles.inputDisabled]}
