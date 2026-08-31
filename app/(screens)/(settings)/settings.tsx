@@ -194,6 +194,27 @@ export default function SettingsScreen() {
 
         <Text style={styles.sectionTitle}>Dados Pessoais</Text>
 
+        {/* Input E-mail (Apenas Leitura / Desabilitado) */}
+        <View style={styles.inputGroup}>
+          <TextInput
+            style={[styles.input, styles.inputDisabled]}
+            value={email}
+            editable={false}
+            pointerEvents="none"
+            placeholder="E-mail do usuário"
+            placeholderTextColor={colors.gray}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          {/* Botão invisível reservando o tamanho exato do espaço */}
+          <View
+            style={[styles.editIconButton, { opacity: 0 }]}
+            pointerEvents="none"
+          >
+            <Ionicons name="pencil" size={20} color="transparent" />
+          </View>
+        </View>
+
         {/* Input Nome (Editável) */}
         <View style={styles.inputGroup}>
           <TextInput
@@ -215,27 +236,6 @@ export default function SettingsScreen() {
               color={isEditingName ? colors.red : colors.neonGreen}
             />
           </TouchableOpacity>
-        </View>
-
-        {/* Input E-mail (Apenas Leitura / Desabilitado) */}
-        <View style={styles.inputGroup}>
-          <TextInput
-            style={[styles.input, styles.inputDisabled]}
-            value={email}
-            editable={false}
-            pointerEvents="none"
-            placeholder="E-mail do usuário"
-            placeholderTextColor={colors.gray}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          {/* Botão invisível reservando o tamanho exato do espaço */}
-          <View
-            style={[styles.editIconButton, { opacity: 0 }]}
-            pointerEvents="none"
-          >
-            <Ionicons name="pencil" size={20} color="transparent" />
-          </View>
         </View>
 
         {/* Input Senha */}
