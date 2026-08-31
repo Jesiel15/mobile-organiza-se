@@ -59,6 +59,15 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
       borderColor: colors.primary,
       backgroundColor: colors.skyBlueSuave,
     },
+    themeOptionActiveBlue: {
+      borderColor: colors.white,
+      backgroundColor: colors.gray,
+    },
+    themeOptionTextBlue: {
+      color: colors.white,
+      fontSize: 14,
+      fontWeight: "600",
+    },
     themeOptionText: {
       color: colors.textColor,
       fontSize: 14,

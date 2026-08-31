@@ -165,14 +165,12 @@ export default function SettingsScreen() {
             >
               Escuro
             </Text>
-            
           </TouchableOpacity>
 
-          
           <TouchableOpacity
             style={[
               styles.themeOption,
-              theme === "blue" && styles.themeOptionActive,
+              theme === "blue" && styles.themeOptionActiveBlue,
             ]}
             onPress={() => setTheme("blue")}
           >
@@ -183,13 +181,14 @@ export default function SettingsScreen() {
             />
             <Text
               style={[
-                styles.themeOptionText,
+                theme === "blue"
+                  ? styles.themeOptionTextBlue
+                  : styles.themeOptionText,
                 theme === "blue" && styles.themeOptionTextActive,
               ]}
             >
               Azul
             </Text>
-            
           </TouchableOpacity>
         </View>
 
