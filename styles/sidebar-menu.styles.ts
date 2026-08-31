@@ -83,10 +83,13 @@ export const getSidebarStyles = (colors: ThemeColors) =>
 
     // ---------- MOBILE BOTTOM BAR ----------
     bottomBar: {
-      position: "absolute",
+      // No React Native Web, usa 'fixed' para colar na tela independente de ScrollView
+      position: (Platform.OS === "web" ? "fixed" : "absolute") as any,
       bottom: 0,
       left: 0,
       right: 0,
+      zIndex: 999, // Traz a barra para frente do ScrollView
+      elevation: 10, // Garante sobreposição no Android
       flexDirection: "row",
       backgroundColor: colors.white,
       paddingTop: 8,
