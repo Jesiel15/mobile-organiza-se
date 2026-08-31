@@ -430,8 +430,9 @@ export default function TransactionsList({
             onPress={() => setShowMonthPicker((prev) => !prev)}
           >
             <Text style={styles.customPickerText}>
+              {/* Caso queira deixa Agosto De 2026  no filtro colocar  month: "long"*/}
               {monthYearFilter.toLocaleDateString("pt-BR", {
-                month: "long",
+                month: "numeric",
                 year: "numeric",
               })}
             </Text>
