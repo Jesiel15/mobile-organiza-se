@@ -58,6 +58,13 @@ export const getExpenseRevenueFormStyles = (
       marginBottom: 6,
       marginLeft: isMobile ? 0 : 26,
     },
+    labelIconeColor: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.textColor,
+      marginBottom: 6,
+      marginLeft: 0,
+    },
     inputGroup: {
       marginBottom: 16,
     },
@@ -134,14 +141,14 @@ export const getExpenseRevenueFormStyles = (
       marginLeft: isMobile ? 0 : 26,
       width: isMobile ? "100%" : 260,
       height: 48,
-      borderWidth: 1,
+      borderWidth: 0,
       borderColor: "transparent",
       boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
       overflow: "hidden",
     },
     dateInputWrapperFocused: {
-      borderColor: colors.outLineInputDate,
-      borderWidth: 2.5,
+      borderColor: isMobile ? "" : colors.outLineInputDate,
+      borderWidth: isMobile ? 0 : 2.5,
     },
     dateTextInput: {
       flex: 1,

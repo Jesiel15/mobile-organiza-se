@@ -356,7 +356,7 @@ export default function FormExpenseScreen() {
             {/* Seletores de Ícone e Cor */}
             <View style={styles.selectorsRow}>
               <View style={styles.selectorItem}>
-                <Text style={styles.label}>Selecione o ícone:</Text>
+                <Text style={styles.labelIconeColor}>Selecione o ícone:</Text>
                 <TouchableOpacity
                   style={[styles.iconBox, { backgroundColor: color }]}
                   onPress={() => setShowIconModal(true)}
@@ -366,7 +366,7 @@ export default function FormExpenseScreen() {
               </View>
 
               <View style={styles.selectorItem}>
-                <Text style={styles.label}>Selecione a cor:</Text>
+                <Text style={styles.labelIconeColor}>Selecione a cor:</Text>
                 <TouchableOpacity
                   style={[styles.colorBox, { backgroundColor: color }]}
                   onPress={() => setShowColorPicker(!showColorPicker)}
