@@ -20,7 +20,6 @@ export default function AlertModal({
   onClose,
 }: AlertModalProps) {
   const { colors } = useTheme();
-  // Reutiliza o mesmo arquivo de estilos da ConfirmModal
   const styles = getConfirmModalStyles(colors);
 
   return (
@@ -29,10 +28,11 @@ export default function AlertModal({
       visible={visible}
       animationType="fade"
       onRequestClose={onClose}
+      // O Callback de navegação só roda quando a animação de fechar termina
+      onDismiss={onClose}
     >
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          {/* Cabeçalho */}
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -40,10 +40,8 @@ export default function AlertModal({
             </TouchableOpacity>
           </View>
 
-          {/* Mensagem */}
           <Text style={styles.message}>{message}</Text>
 
-          {/* Botão Único de Ação */}
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={[styles.button, styles.confirmButton, { width: "100%" }]}

@@ -84,10 +84,17 @@ export default function FormExpenseScreen() {
   };
 
   const closeAlert = () => {
-    if (alertConfig.onClose) {
-      alertConfig.onClose();
-    }
+    const navigationCallback = alertConfig.onClose;
+
+    // 1. Oculta a modal primeiro
     setAlertConfig((prev) => ({ ...prev, visible: false }));
+
+    // 2. Se houver callback (ex: router.back()), aguarda a animação fechar
+    if (navigationCallback) {
+      setTimeout(() => {
+        navigationCallback();
+      }, 150); // 150ms é o suficiente para o unmount do fade
+    }
   };
 
   useEffect(() => {
