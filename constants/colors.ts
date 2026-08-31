@@ -9,6 +9,7 @@ export interface ThemeColors {
   checkmarkOut: string;
   checkmark: string;
   modalColor: string;
+  outLineInputDate: string;
 
   // Brand colours
   red: string;
@@ -51,6 +52,7 @@ export const lightColors: ThemeColors = {
   checkmarkOut: "#848484",
   checkmark: "#ffffff",
   modalColor: "#ffffff",
+  outLineInputDate: "#242424",
 
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -92,6 +94,7 @@ export const darkColors: ThemeColors = {
   checkmarkOut: "#ffffff",
   checkmark: "#404040",
   modalColor: "#404040",
+  outLineInputDate: "#ffffff",
 
   // Brand colours
   red: "#e0533d",
@@ -134,6 +137,7 @@ export const blueColors: ThemeColors = {
   checkmarkOut: "#2881e4",
   checkmark: "#ffffff",
   modalColor: "#e0f2fe",
+  outLineInputDate: "#242424",
 
   // Brand colours
   red: "#e0533d",

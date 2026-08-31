@@ -19,6 +19,21 @@ import {
   View,
 } from "react-native";
 
+const MONTHS_SHORT = [
+  "Jan",
+  "Fev",
+  "Mar",
+  "Abr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Set",
+  "Out",
+  "Nov",
+  "Dez",
+];
+
 export default function FormExpenseScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -53,12 +68,21 @@ export default function FormExpenseScreen() {
   // Estados do Formulário
   const [nameExpense, setNameExpense] = useState("");
   const [valueExpense, setValueExpense] = useState("");
-  const [displayDate, setDisplayDate] = useState("");
+
+  // Estado de Data e Popover
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [dateInputText, setDateInputText] = useState<string>("");
+  const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<"days" | "months" | "years">("days");
+
   const [anotation, setAnotation] = useState("");
   const [color, setColor] = useState(colors.red);
   const [icon, setIcon] = useState<string>("barcode-outline");
 
-  // Popovers
+  // Outline do campo Data
+  const [isDateFocused, setIsDateFocused] = useState(false);
+
+  // Popovers de Ícone e Cor
   const [showIconModal, setShowIconModal] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
@@ -99,6 +123,14 @@ export default function FormExpenseScreen() {
     }
   };
 
+  // Sincroniza o texto do input sempre que selectedDate mudar (DD/MM/AAAA)
+  useEffect(() => {
+    const day = String(selectedDate.getDate()).padStart(2, "0");
+    const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const year = selectedDate.getFullYear();
+    setDateInputText(`${day}/${month}/${year}`);
+  }, [selectedDate]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -117,7 +149,8 @@ export default function FormExpenseScreen() {
   const resetForm = () => {
     setNameExpense("");
     setValueExpense("");
-    setDisplayDate(new Date().toLocaleDateString("pt-BR"));
+    const now = new Date();
+    setSelectedDate(now);
     setAnotation("");
     setColor(colors.red);
     setIcon("barcode-outline");
@@ -139,11 +172,7 @@ export default function FormExpenseScreen() {
       setValueExpense(formatCurrency(rawValue));
 
       if (expense.dateExpense) {
-        const rawDate = expense.dateExpense.split("T")[0];
-        const [year, month, day] = rawDate.split("-");
-        if (year && month && day) {
-          setDisplayDate(`${day}/${month}/${year}`);
-        }
+        setSelectedDate(new Date(expense.dateExpense));
       }
 
       setAnotation(expense.anotation || "");
@@ -170,20 +199,94 @@ export default function FormExpenseScreen() {
     }).format(numericValue);
   };
 
-  const handleDateChange = (text: string) => {
+  // Manipulação da digitação manual com máscara DD/MM/AAAA
+  const handleDateInputChange = (text: string) => {
     const cleaned = text.replace(/\D/g, "");
     let formatted = cleaned;
 
-    if (cleaned.length > 2 && cleaned.length <= 4) {
-      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
-    } else if (cleaned.length > 4) {
+    if (cleaned.length > 4) {
       formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(
         2,
         4
       )}/${cleaned.slice(4, 8)}`;
+    } else if (cleaned.length > 2) {
+      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`;
     }
 
-    setDisplayDate(formatted);
+    setDateInputText(formatted);
+
+    if (cleaned.length === 8) {
+      const day = parseInt(cleaned.slice(0, 2), 10);
+      const month = parseInt(cleaned.slice(2, 4), 10) - 1;
+      const year = parseInt(cleaned.slice(4, 8), 10);
+
+      if (
+        day >= 1 &&
+        day <= 31 &&
+        month >= 0 &&
+        month <= 11 &&
+        year >= 1900 &&
+        year <= 2100
+      ) {
+        const updatedDate = new Date(year, month, day);
+        setSelectedDate(updatedDate);
+      }
+    }
+  };
+
+  // Funções do Calendário / Popover
+  const getDaysInMonth = (year: number, month: number) => {
+    const date = new Date(year, month, 1);
+    const days = [];
+    while (date.getMonth() === month) {
+      days.push(new Date(date));
+      date.setDate(date.getDate() + 1);
+    }
+    return days;
+  };
+
+  const getYearsList = (currentYear: number) => {
+    const startYear = currentYear - 5;
+    return Array.from({ length: 12 }, (_, i) => startYear + i);
+  };
+
+  const handleSelectDay = (dayNumber: number) => {
+    const updatedDate = new Date(selectedDate);
+    updatedDate.setDate(dayNumber);
+    setSelectedDate(updatedDate);
+    setShowMonthPicker(false);
+  };
+
+  const handleSelectMonthFromPicker = (monthIndex: number) => {
+    const updatedDate = new Date(selectedDate);
+    updatedDate.setMonth(monthIndex);
+    setSelectedDate(updatedDate);
+    setViewMode("days");
+  };
+
+  const handleSelectYearFromPicker = (year: number) => {
+    const updatedDate = new Date(selectedDate);
+    updatedDate.setFullYear(year);
+    setSelectedDate(updatedDate);
+    setViewMode("months");
+  };
+
+  const handleMonthChange = (delta: number) => {
+    const updatedDate = new Date(selectedDate);
+    if (viewMode === "years") {
+      updatedDate.setFullYear(updatedDate.getFullYear() + delta * 10);
+    } else if (viewMode === "months") {
+      updatedDate.setFullYear(updatedDate.getFullYear() + delta);
+    } else {
+      updatedDate.setMonth(updatedDate.getMonth() + delta);
+    }
+    setSelectedDate(updatedDate);
+  };
+
+  const handleSetCurrentDate = () => {
+    setSelectedDate(new Date());
+    setViewMode("days");
+    setShowMonthPicker(false);
   };
 
   const handleSave = async () => {
@@ -201,13 +304,7 @@ export default function FormExpenseScreen() {
 
     setSubmitting(true);
     try {
-      let isoDate = new Date().toISOString();
-      if (displayDate.length === 10) {
-        const [day, month, year] = displayDate.split("/");
-        isoDate = new Date(
-          `${year}-${month}-${day}T00:00:00.000Z`
-        ).toISOString();
-      }
+      const isoDate = selectedDate.toISOString();
 
       const payload = {
         nameExpense,
@@ -305,122 +402,308 @@ export default function FormExpenseScreen() {
               </View>
             )}
 
-            {/* Campos de Texto */}
-            <TextInput
-              placeholder="Nome da despesa"
-              placeholderTextColor={colors.gray}
-              value={nameExpense}
-              onChangeText={setNameExpense}
-              maxLength={60}
-              style={styles.input}
-            />
+            {/* Input de Nome */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Nome da despesa</Text>
+              <TextInput
+                style={styles.input}
+                value={nameExpense}
+                onChangeText={setNameExpense}
+                placeholder="Ex: Aluguel, Supermercado..."
+                placeholderTextColor={colors.gray}
+                maxLength={60}
+              />
+            </View>
 
-            <TextInput
-              placeholder="Valor da despesa"
-              placeholderTextColor={colors.gray}
-              keyboardType="numeric"
-              maxLength={18}
-              value={valueExpense}
-              onChangeText={(val) => setValueExpense(formatCurrency(val))}
-              style={styles.input}
-            />
+            {/* Input de Valor */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Valor</Text>
+              <TextInput
+                style={styles.input}
+                value={valueExpense}
+                onChangeText={(text) => setValueExpense(formatCurrency(text))}
+                keyboardType="numeric"
+                placeholder="R$ 0,00"
+                placeholderTextColor={colors.gray}
+                maxLength={18}
+              />
+            </View>
 
-            <TextInput
-              placeholder="DD/MM/YYYY"
-              placeholderTextColor={colors.gray}
-              keyboardType="numeric"
-              maxLength={10}
-              value={displayDate}
-              onChangeText={handleDateChange}
-              style={[styles.input, styles.dateInput]}
-            />
+            {/* Input e Seletor de Data */}
+            <View style={styles.filterContainer}>
+              <Text style={styles.label}>Data</Text>
 
-            <TextInput
-              placeholder="Anotação"
-              placeholderTextColor={colors.gray}
-              value={anotation}
-              onChangeText={setAnotation}
-              multiline
-              numberOfLines={4}
-              maxLength={255}
-              style={[styles.input, styles.textArea]}
-            />
-
-            {/* Botões */}
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                onPress={handleSave}
-                disabled={submitting}
+              {/* Wrapper do input com indicador visual de foco */}
+              <View
                 style={[
-                  styles.btn,
-                  styles.btnSave,
-                  submitting && { opacity: 0.7 },
+                  styles.dateInputWrapper,
+                  isDateFocused && styles.dateInputWrapperFocused,
                 ]}
               >
-                <Text style={styles.btnText}>
-                  {submitting
-                    ? "Salvando..."
-                    : isEditing
-                    ? "Salvar Alterações"
-                    : "Adicionar Despesa"}
-                </Text>
+                <TextInput
+                  style={[
+                    styles.dateTextInput,
+                    {
+                      outlineStyle: "none",
+                      outlineWidth: 0,
+                      outlineColor: "transparent",
+                    } as any,
+                  ]}
+                  value={dateInputText}
+                  onChangeText={handleDateInputChange}
+                  onFocus={() => setIsDateFocused(true)}
+                  onBlur={() => setIsDateFocused(false)}
+                  placeholder="DD/MM/AAAA"
+                  placeholderTextColor={colors.gray}
+                  keyboardType="numeric"
+                  maxLength={10}
+                  underlineColorAndroid="transparent"
+                />
+
+                <TouchableOpacity
+                  style={styles.calendarIconButton}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setShowMonthPicker((prev) => !prev);
+                    setViewMode("days");
+                  }}
+                >
+                  <Ionicons name="calendar-outline" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+
+              {showMonthPicker && (
+                <View style={styles.popoverCard}>
+                  {/* Cabeçalho Interativo Mês / Ano */}
+                  <View style={styles.popoverHeader}>
+                    <TouchableOpacity
+                      onPress={() => handleMonthChange(-1)}
+                      style={styles.arrowButton}
+                    >
+                      <Ionicons
+                        name="chevron-back"
+                        size={18}
+                        color={colors.gray}
+                      />
+                    </TouchableOpacity>
+
+                    <View style={styles.headerTitleGroup}>
+                      <TouchableOpacity onPress={() => setViewMode("months")}>
+                        <Text
+                          style={[
+                            styles.popoverHeaderTitle,
+                            viewMode === "months" && styles.activeTitleText,
+                          ]}
+                        >
+                          {selectedDate
+                            .toLocaleDateString("pt-BR", { month: "short" })
+                            .replace(".", "")}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity onPress={() => setViewMode("years")}>
+                        <Text
+                          style={[
+                            styles.popoverHeaderTitle,
+                            viewMode === "years" && styles.activeTitleText,
+                          ]}
+                        >
+                          {selectedDate.getFullYear()}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => handleMonthChange(1)}
+                      style={styles.arrowButton}
+                    >
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={colors.gray}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Visualização de Dias */}
+                  {viewMode === "days" && (
+                    <View style={styles.daysGrid}>
+                      {getDaysInMonth(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth()
+                      ).map((dateObj) => {
+                        const dayNumber = dateObj.getDate();
+                        const isSelected = dayNumber === selectedDate.getDate();
+
+                        return (
+                          <TouchableOpacity
+                            key={dayNumber}
+                            style={[
+                              styles.dayGridItem,
+                              isSelected && styles.dayGridItemSelected,
+                            ]}
+                            onPress={() => handleSelectDay(dayNumber)}
+                          >
+                            <Text
+                              style={[
+                                styles.dayGridText,
+                                isSelected && styles.dayGridTextSelected,
+                              ]}
+                            >
+                              {dayNumber}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Visualização de Meses */}
+                  {viewMode === "months" && (
+                    <View style={styles.pickerGrid}>
+                      {MONTHS_SHORT.map((monthName, index) => {
+                        const isSelected = index === selectedDate.getMonth();
+                        return (
+                          <TouchableOpacity
+                            key={monthName}
+                            style={[
+                              styles.pickerGridItem,
+                              isSelected && styles.pickerGridItemSelected,
+                            ]}
+                            onPress={() => handleSelectMonthFromPicker(index)}
+                          >
+                            <Text
+                              style={[
+                                styles.pickerGridText,
+                                isSelected && styles.pickerGridTextSelected,
+                              ]}
+                            >
+                              {monthName}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Visualização de Anos */}
+                  {viewMode === "years" && (
+                    <View style={styles.pickerGrid}>
+                      {getYearsList(selectedDate.getFullYear()).map((year) => {
+                        const isSelected = year === selectedDate.getFullYear();
+                        return (
+                          <TouchableOpacity
+                            key={year}
+                            style={[
+                              styles.pickerGridItem,
+                              isSelected && styles.pickerGridItemSelected,
+                            ]}
+                            onPress={() => handleSelectYearFromPicker(year)}
+                          >
+                            <Text
+                              style={[
+                                styles.pickerGridText,
+                                isSelected && styles.pickerGridTextSelected,
+                              ]}
+                            >
+                              {year}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  <View style={styles.popoverFooter}>
+                    <TouchableOpacity onPress={handleSetCurrentDate}>
+                      <Text style={styles.footerActionText}>Hoje</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+
+            {/* Anotação */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Anotação</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={anotation}
+                onChangeText={setAnotation}
+                multiline
+                numberOfLines={3}
+                placeholder="Observações adicionais..."
+                placeholderTextColor={colors.gray}
+                maxLength={255}
+              />
+            </View>
+
+            {/* Botões de Ação */}
+            <View style={styles.actionsContainer}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => router.back()}
-                style={[styles.btn, styles.btnCancel]}
+                style={styles.saveButton}
+                onPress={handleSave}
+                disabled={submitting}
               >
-                <Text style={styles.btnText}>Cancelar</Text>
+                {submitting ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Salvar</Text>
+                )}
               </TouchableOpacity>
             </View>
           </ScrollView>
         )}
       </View>
 
-      {/* Modal de Seleção de Ícones */}
-      <Modal visible={showIconModal} transparent animationType="fade">
+      {/* Modal de Seleção de Ícone */}
+      <Modal
+        visible={showIconModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowIconModal(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Selecionar Ícone</Text>
-              <TouchableOpacity onPress={() => setShowIconModal(false)}>
-                <Ionicons name="close" size={24} color={colors.textColor} />
-              </TouchableOpacity>
-            </View>
-
+            <Text style={styles.modalTitle}>Escolha um ícone</Text>
             <ScrollView contentContainerStyle={styles.iconGrid}>
-              {ListIcons.map((item: any) => (
+              {ListIcons.map((iconName) => (
                 <TouchableOpacity
-                  key={item}
+                  key={iconName}
                   style={[
-                    styles.iconTile,
-                    icon === item && styles.iconTileSelected,
+                    styles.iconGridItem,
+                    icon === iconName && styles.iconGridItemSelected,
                   ]}
                   onPress={() => {
-                    setIcon(item);
+                    setIcon(iconName);
                     setShowIconModal(false);
                   }}
                 >
                   <Ionicons
-                    name={item as any}
-                    size={24}
-                    color={colors.iconeOutColor}
+                    name={iconName as any}
+                    size={28}
+                    color={icon === iconName ? color : colors.iconeOutColor}
                   />
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
             <TouchableOpacity
-              style={styles.modalCancelBtn}
+              style={styles.closeModalButton}
               onPress={() => setShowIconModal(false)}
             >
-              <Text style={styles.btnText}>Cancelar</Text>
+              <Text style={styles.closeModalButtonText}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* Modal de Alerta */}
       <AlertModal
         visible={alertConfig.visible}
         title={alertConfig.title}

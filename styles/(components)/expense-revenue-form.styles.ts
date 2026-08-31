@@ -55,6 +55,11 @@ export const getExpenseRevenueFormStyles = (
       fontSize: 16,
       fontWeight: "600",
       color: colors.textColor,
+      marginBottom: 6,
+      marginLeft: isMobile ? 0 : 26,
+    },
+    inputGroup: {
+      marginBottom: 16,
     },
     iconBox: {
       width: 40,
@@ -75,8 +80,6 @@ export const getExpenseRevenueFormStyles = (
       marginBottom: 20,
       marginLeft: isMobile ? 0 : 26,
       maxWidth: 320,
-      // borderWidth: 1,
-      // borderColor: colors.surfaceBorder,
       boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
     },
     colorPickerTitle: {
@@ -102,13 +105,10 @@ export const getExpenseRevenueFormStyles = (
     input: {
       backgroundColor: colors.surface,
       color: colors.textColor,
-      // borderWidth: 1,
-      // borderColor: colors.surfaceBorder,
       paddingHorizontal: 16,
       paddingVertical: 12,
       borderRadius: 6,
       fontSize: 16,
-      marginBottom: 16,
       marginLeft: isMobile ? 0 : 26,
       boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
     },
@@ -119,13 +119,162 @@ export const getExpenseRevenueFormStyles = (
       height: 100,
       textAlignVertical: "top",
     },
-    buttonRow: {
+
+    /* Seletor com Input Híbrido */
+    filterContainer: {
+      position: "relative",
+      zIndex: 1000,
+      marginBottom: 16,
+    },
+    dateInputWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.surface,
+      borderRadius: 8,
+      marginLeft: isMobile ? 0 : 26,
+      width: isMobile ? "100%" : 260,
+      height: 48,
+      borderWidth: 1,
+      borderColor: "transparent",
+      boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
+      overflow: "hidden",
+    },
+    dateInputWrapperFocused: {
+      borderColor: colors.outLineInputDate,
+      borderWidth: 2.5,
+    },
+    dateTextInput: {
+      flex: 1,
+      height: "100%",
+      paddingLeft: 16,
+      paddingRight: 8,
+      fontSize: 16,
+      color: colors.textColor,
+      backgroundColor: "transparent",
+      borderWidth: 0,
+    },
+    calendarIconButton: {
+      backgroundColor: colors.primary,
+      width: 52,
+      height: "100%",
+      justifyContent: "center",
+      alignItems: "center",
+      flexShrink: 0,
+    },
+    popoverCard: {
+      position: "absolute",
+      top: 75,
+      left: isMobile ? 0 : 26,
+      width: isMobile ? "100%" : 280,
+      backgroundColor: colors.surface,
+      borderRadius: 8,
+      padding: 12,
+      boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+      elevation: 5,
+      zIndex: 1001,
+    },
+    popoverHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    headerTitleGroup: {
+      flexDirection: "row",
+      gap: 6,
+      alignItems: "center",
+    },
+    popoverHeaderTitle: {
+      fontSize: 15,
+      fontWeight: "bold",
+      color: colors.textColor,
+      textTransform: "capitalize",
+    },
+    activeTitleText: {
+      color: colors.primary,
+      textDecorationLine: "underline",
+    },
+    arrowButton: {
+      padding: 4,
+    },
+
+    /* Grids do Popover */
+    daysGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 6,
+      justifyContent: "flex-start",
+    },
+    dayGridItem: {
+      width: "12.5%",
+      aspectRatio: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 6,
+      backgroundColor: colors.backgroundHome,
+    },
+    dayGridItemSelected: {
+      backgroundColor: colors.primary,
+    },
+    dayGridText: {
+      fontSize: 13,
+      color: colors.textColor,
+    },
+    dayGridTextSelected: {
+      color: "#FFFFFF",
+      fontWeight: "bold",
+    },
+
+    pickerGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "space-between",
+      paddingVertical: 8,
+    },
+    pickerGridItem: {
+      width: "30%",
+      height: 40,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 8,
+      backgroundColor: colors.backgroundHome,
+    },
+    pickerGridItemSelected: {
+      backgroundColor: colors.primary,
+    },
+    pickerGridText: {
+      fontSize: 14,
+      color: colors.textColor,
+      fontWeight: "500",
+    },
+    pickerGridTextSelected: {
+      color: "#FFFFFF",
+      fontWeight: "bold",
+    },
+
+    popoverFooter: {
+      marginTop: 12,
+      alignItems: "center",
+      borderTopWidth: 1,
+      borderTopColor: colors.lineColor,
+      paddingTop: 8,
+    },
+    footerActionText: {
+      fontSize: 13,
+      color: colors.primary,
+      fontWeight: "600",
+    },
+
+    /* Ações */
+    actionsContainer: {
       flexDirection: isMobile ? "column" : "row",
       gap: 12,
-      marginTop: 8,
+      marginTop: 16,
       marginLeft: isMobile ? 0 : 26,
     },
-    btn: {
+    saveButton: {
+      backgroundColor: colors.neonGreen,
       paddingVertical: 14,
       paddingHorizontal: 24,
       borderRadius: 6,
@@ -133,17 +282,27 @@ export const getExpenseRevenueFormStyles = (
       alignItems: "center",
       justifyContent: "center",
     },
-    btnSave: {
-      backgroundColor: colors.neonGreen,
-    },
-    btnCancel: {
-      backgroundColor: colors.red,
-    },
-    btnText: {
+    saveButtonText: {
       color: "#FFFFFF",
       fontWeight: "bold",
       fontSize: 15,
     },
+    cancelButton: {
+      backgroundColor: colors.red,
+      paddingVertical: 14,
+      paddingHorizontal: 24,
+      borderRadius: 6,
+      minWidth: 160,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    cancelButtonText: {
+      color: "#FFFFFF",
+      fontWeight: "bold",
+      fontSize: 15,
+    },
+
+    /* Modais */
     modalOverlay: {
       flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -169,6 +328,7 @@ export const getExpenseRevenueFormStyles = (
       fontSize: 18,
       fontWeight: "bold",
       color: colors.textColor,
+      marginBottom: 16,
     },
     iconGrid: {
       flexDirection: "row",
@@ -177,7 +337,7 @@ export const getExpenseRevenueFormStyles = (
       justifyContent: "center",
       paddingVertical: 12,
     },
-    iconTile: {
+    iconGridItem: {
       width: 48,
       height: 48,
       borderRadius: 8,
@@ -187,11 +347,11 @@ export const getExpenseRevenueFormStyles = (
       alignItems: "center",
       backgroundColor: colors.iconeColor,
     },
-    iconTileSelected: {
+    iconGridItemSelected: {
       borderColor: colors.primary,
       borderWidth: 2,
     },
-    modalCancelBtn: {
+    closeModalButton: {
       backgroundColor: colors.red,
       padding: 12,
       borderRadius: 6,
@@ -199,5 +359,10 @@ export const getExpenseRevenueFormStyles = (
       marginTop: 16,
       alignSelf: isMobile ? "stretch" : "flex-end",
       minWidth: 120,
+    },
+    closeModalButtonText: {
+      color: "#FFFFFF",
+      fontWeight: "bold",
+      fontSize: 14,
     },
   });
