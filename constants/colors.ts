@@ -3,6 +3,9 @@
 // pra manter os dois projetos com a mesma identidade visual.
 
 export interface ThemeColors {
+  checkmarkOut: string;
+  checkmark: string;
+
   // Brand colours
   red: string;
   redSuave: string;
@@ -38,7 +41,9 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
-  // Brand colours
+  checkmarkOut: "#848484",
+  checkmark: "#ffffff",
+
   red: "#e0533d",
   redSuave: "#fecaca",
   purple: "#9da7d0",
@@ -73,6 +78,9 @@ export const lightColors: ThemeColors = {
 };
 
 export const darkColors: ThemeColors = {
+  checkmarkOut: "#ffffff",
+  checkmark: "#404040",
+
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -107,11 +115,49 @@ export const darkColors: ThemeColors = {
   scrollColor: "#747474",
 };
 
-export type ThemeName = "light" | "dark";
+export const blueColors: ThemeColors = {
+  checkmarkOut: "#2881e4",
+  checkmark: "#ffffff",
+  // Brand colours
+  red: "#e0533d",
+  redSuave: "#fecaca",
+  purple: "#9da7d0",
+  green: "#469b88",
+  blue: "#377cc8",
+  pink: "#e78c9d",
+  lilac: "#d9d8f7",
+  neonGreen: "#16df7f",
+  skyBlueSuave: "#e0f2fe",
+  skyBlue: "#2881e4",
+  calendario: "#122c3d",
+
+  // Base colours
+  white: "#285f9e",
+  black: "#ffffff",
+  yellow: "#eed868",
+  gray: "#122c3d",
+  background: "#2e6fb4",
+  backgroundHome: "#377cc8",
+
+  // Aura / componentes
+  primary: "#377cc8",
+  primaryHover: "#2e6fb4",
+  primaryActive: "#285f9e",
+  textColor: "#122c3d",
+  surface: "#e0f2fe",
+  surfaceBorder: "#ffffff",
+
+  // Linhas de listas (despesas/receitas)
+  lineColor: "#747474",
+  scrollColor: "#747474",
+};
+
+export type ThemeName = "light" | "dark" | "blue";
 
 export const themes: Record<ThemeName, ThemeColors> = {
   light: lightColors,
   dark: darkColors,
+  blue: blueColors,
 };
 
 // Paleta fixa das telas de autenticação (login/register).

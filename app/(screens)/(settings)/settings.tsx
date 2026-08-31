@@ -165,6 +165,31 @@ export default function SettingsScreen() {
             >
               Escuro
             </Text>
+            
+          </TouchableOpacity>
+
+          
+          <TouchableOpacity
+            style={[
+              styles.themeOption,
+              theme === "blue" && styles.themeOptionActive,
+            ]}
+            onPress={() => setTheme("blue")}
+          >
+            <Ionicons
+              name="moon-outline"
+              size={20}
+              color={theme === "blue" ? colors.primary : colors.textColor}
+            />
+            <Text
+              style={[
+                styles.themeOptionText,
+                theme === "blue" && styles.themeOptionTextActive,
+              ]}
+            >
+              Azul
+            </Text>
+            
           </TouchableOpacity>
         </View>
 

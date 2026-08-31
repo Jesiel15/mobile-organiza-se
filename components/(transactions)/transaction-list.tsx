@@ -508,10 +508,10 @@ export default function TransactionsList({
                         borderRadius: 6, // Controla a curvatura dos cantos de ambos
                         borderWidth: 1.5, // Controla a espessura da linha de ambos
                         borderColor: item.isPaid
-                          ? colors.gray
+                          ? colors.checkmarkOut
                           : colors.surfaceBorder,
                         backgroundColor: item.isPaid
-                          ? colors.gray
+                          ? colors.checkmarkOut
                           : "transparent",
                         justifyContent: "center",
                         alignItems: "center",
@@ -521,7 +521,7 @@ export default function TransactionsList({
                         <Ionicons
                           name="checkmark"
                           size={16} // Ajuste o tamanho do ícone interno conforme necessário
-                          color={colors.white} // Cor da marquinha do check
+                          color={colors.checkmark} // Cor da marquinha do check
                         />
                       )}
                     </View>
