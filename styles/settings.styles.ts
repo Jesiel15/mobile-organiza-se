@@ -120,6 +120,15 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
       marginLeft: isMobile ? 0 : 26,
       maxWidth: 900,
     },
+    logoutButton: {
+      paddingVertical: 14,
+      paddingHorizontal: 24,
+      borderRadius: 6,
+      minWidth: 160,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.buttonLogoutConfig,
+    },
     saveButton: {
       paddingVertical: 14,
       paddingHorizontal: 24,

@@ -10,7 +10,7 @@ export interface ThemeColors {
   checkmark: string;
   modalColor: string;
   outLineInputDate: string;
-
+  buttonLogoutConfig: string;
   // Brand colours
   red: string;
   redSuave: string;
@@ -53,7 +53,7 @@ export const lightColors: ThemeColors = {
   checkmark: "#ffffff",
   modalColor: "#ffffff",
   outLineInputDate: "#242424",
-
+  buttonLogoutConfig: "#FF7F00",
   red: "#e0533d",
   redSuave: "#fecaca",
   purple: "#9da7d0",
@@ -95,7 +95,7 @@ export const darkColors: ThemeColors = {
   checkmark: "#404040",
   modalColor: "#404040",
   outLineInputDate: "#ffffff",
-
+  buttonLogoutConfig: "#FF7F00",
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -138,7 +138,7 @@ export const blueColors: ThemeColors = {
   checkmark: "#ffffff",
   modalColor: "#e0f2fe",
   outLineInputDate: "#242424",
-
+  buttonLogoutConfig: "#FF7F00",
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",

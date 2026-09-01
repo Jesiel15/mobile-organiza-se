@@ -164,10 +164,10 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
       {/* Modal de confirmação reutilizável */}
       <ConfirmModal
         visible={isSignOutModalOpen}
-        title="Deseja sair"
+        title="Desconectar conta"
         message="Tem certeza que deseja sair?"
         cancelText="Cancelar"
-        confirmText="Sair?"
+        confirmText="Sair"
         onCancel={() => setIsSignOutModalOpen(false)}
         onConfirm={handleConfirmSignOut}
       />

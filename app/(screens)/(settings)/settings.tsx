@@ -1,3 +1,4 @@
+import ConfirmModal from "@/components/(confirm-modal)/confirm-modal";
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -31,6 +32,9 @@ export default function SettingsScreen() {
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
+
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const { signOut } = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -96,6 +100,11 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleConfirmSignOut = () => {
+    setIsSignOutModalOpen(false);
+    signOut();
+  };
+
   const handleCancel = () => {
     if (user) {
       setName(user.name);
@@ -120,6 +129,13 @@ export default function SettingsScreen() {
         <Text style={styles.subtitle}>
           Gerencie suas preferências de conta e aplicativo
         </Text>
+
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={() => setIsSignOutModalOpen(true)}
+        >
+          <Text style={styles.saveButtonText}> Desconectar conta </Text>
+        </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Aparência</Text>
         <View style={styles.themeOptions}>
@@ -302,6 +318,16 @@ export default function SettingsScreen() {
           </View>
         )}
       </ScrollView>
+      {/* Modal de confirmação reutilizável */}
+      <ConfirmModal
+        visible={isSignOutModalOpen}
+        title="Desconectar conta"
+        message="Tem certeza que deseja sair?"
+        cancelText="Cancelar"
+        confirmText="Sair"
+        onCancel={() => setIsSignOutModalOpen(false)}
+        onConfirm={handleConfirmSignOut}
+      />
     </View>
   );
 }
