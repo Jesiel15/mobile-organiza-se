@@ -139,6 +139,7 @@ export const blueColors: ThemeColors = {
   modalColor: "#e0f2fe",
   outLineInputDate: "#242424",
   buttonLogoutConfig: "#FF7F00",
+
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -166,7 +167,7 @@ export const blueColors: ThemeColors = {
   primaryActive: "#285f9e",
   textColor: "#122c3d",
   surface: "#e0f2fe",
-  surfaceBorder: "#ffffff",
+  surfaceBorder: "#2e6fb4",
 
   // Linhas de listas (despesas/receitas)
   lineColor: "#747474",

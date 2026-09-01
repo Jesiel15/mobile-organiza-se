@@ -165,10 +165,11 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       borderStyle: "dashed",
       borderColor: colors?.surfaceBorder || "#D0D5DD",
       borderRadius: 8,
-      height: 40,
+      height: 46,
       justifyContent: "center",
       alignItems: "center",
       marginBottom: 16,
+      // backgroundColor: colors.background,
     },
     addButtonText: {
       color: colors?.gray || "#475467",
