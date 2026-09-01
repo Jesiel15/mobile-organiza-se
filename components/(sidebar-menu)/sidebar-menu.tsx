@@ -86,7 +86,8 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
             );
           })}
 
-          <TouchableOpacity
+          {/* Botão logout no menu inferior do mobile */}
+          {/* <TouchableOpacity
             style={styles.bottomBarItem}
             onPress={() => setIsSignOutModalOpen(true)}
           >
@@ -94,7 +95,7 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
             <Text style={[styles.bottomBarText, { color: colors.red }]}>
               Sair
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       ) : (
         /* ---------- DESKTOP/WEB: sidebar lateral fixo ---------- */
