@@ -87,4 +87,16 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  errorText: {
+    color: "#e0533d",
+    fontSize: 13,
+    fontWeight: "500",
+  },
 });

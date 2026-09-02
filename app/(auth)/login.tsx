@@ -4,7 +4,6 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   Text,
   TextInput,
@@ -25,19 +24,29 @@ export default function LoginScreen() {
   const [lembrar, setLembrar] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleLogin = async () => {
     if (!email || !senha) {
-      Alert.alert("Erro", "Preencha todos os campos.");
+      setErrorMessage("Preencha todos os campos.");
       return;
     }
 
     try {
+      setErrorMessage(""); // Limpa erros anteriores
       setLoading(true);
       await signIn(email, senha);
-      router.replace("/(screens)/(home)/home"); // Altere para a rota da sua tela Home
+      router.replace("/(screens)/(home)/home");
     } catch (error: any) {
-      const message = error.response?.data?.msg || "Email ou senha incorretos.";
-      Alert.alert("Falha no Login", message);
+      if (!error.response) {
+        setErrorMessage(
+          "Não foi possível conectar ao servidor. Tente novamente."
+        );
+      } else {
+        setErrorMessage(
+          error.response.data?.msg || "E-mail ou senha incorretos."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -77,6 +86,14 @@ export default function LoginScreen() {
               />
             </Pressable>
           </View>
+
+          {/* Exibe o texto de erro apenas se a string não estiver vazia */}
+          {!!errorMessage && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle-outline" size={16} color="#e0533d" />
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          )}
 
           <View style={styles.rowBetween}>
             <Pressable
