@@ -3,7 +3,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -11,6 +13,7 @@ import {
   View,
 } from "react-native";
 
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 import { getTransactionsStyles } from "@/styles/(components)/transactions-lists.styles";
@@ -100,6 +103,8 @@ export default function TransactionsList({
 
   const [monthYearFilter, setMonthYearFilter] = useState<Date>(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
+
+  const { signOut } = useAuth();
 
   // Estado unificado para controle do ConfirmModal
   const [modalConfig, setModalConfig] = useState<ModalConfig>({
@@ -237,7 +242,8 @@ export default function TransactionsList({
         const dateToUse = filterDateOverride ?? monthYearFilter;
         applyFilter(formattedExpenses, formattedRevenues, dateToUse);
       } catch (err) {
-        console.error("Erro ao carregar transações:", err);
+        console.log("Erro ao carregar transações", err);
+        emitAlertErro(`Erro ao carregar transações`);
       } finally {
         setIsLoading(false);
       }
@@ -300,7 +306,8 @@ export default function TransactionsList({
       await api.delete(`/expenses/${monthYear}/${expense.id}`);
       await refreshTransactions();
     } catch (err) {
-      console.error("Falha ao excluir despesa", err);
+      console.log("Falha ao excluir despesa", err);
+      emitAlertErro(`Falha ao excluir despesa`);
     }
   };
 
@@ -311,7 +318,8 @@ export default function TransactionsList({
       await api.delete(`/revenues/${monthYear}/${revenue.id}`);
       await refreshTransactions();
     } catch (err) {
-      console.error("Falha ao excluir receita", err);
+      console.log("Falha ao excluir receita", err);
+      emitAlertErro(`Falha ao excluir receita`);
     }
   };
 
@@ -322,7 +330,8 @@ export default function TransactionsList({
       await api.post(`/expenses/${monthYear}/${expense.id}/replicate`);
       await refreshTransactions();
     } catch (err) {
-      console.error("Falha ao replicar despesa", err);
+      console.log("Falha ao replicar despesa", err);
+      emitAlertErro(`Falha ao replicar despesa`);
     }
   };
 
@@ -333,7 +342,8 @@ export default function TransactionsList({
       await api.post(`/revenues/${monthYear}/${revenue.id}/replicate`);
       await refreshTransactions();
     } catch (err) {
-      console.error("Falha ao replicar receita", err);
+      console.log("Falha ao replicar receita", err);
+      emitAlertErro(`Falha ao replicar receita`);
     }
   };
 
@@ -416,6 +426,22 @@ export default function TransactionsList({
     const now = new Date();
     setMonthYearFilter(new Date(now.getFullYear(), now.getMonth(), 1));
     setShowMonthPicker(false);
+  };
+
+  const emitAlertErro = (message: string) => {
+    if (Platform.OS === "web") {
+      window.alert(`Sessão expirada\n\n${message}`);
+      signOut();
+    } else {
+      Alert.alert("Sessão expirada", message, [
+        {
+          text: "OK",
+          onPress: async () => {
+            await signOut();
+          },
+        },
+      ]);
+    }
   };
 
   return (
