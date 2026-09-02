@@ -3,9 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
-  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -17,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 import { getTransactionsStyles } from "@/styles/(components)/transactions-lists.styles";
+import AlertModal from "../(alert-modal)/alert-modal";
 import ConfirmModal from "../(confirm-modal)/confirm-modal";
 import SummaryCards from "../(summary)/summary-cards";
 
@@ -103,6 +102,17 @@ export default function TransactionsList({
 
   const [monthYearFilter, setMonthYearFilter] = useState<Date>(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
+
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onClose?: () => void;
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+  });
 
   const { signOut } = useAuth();
 
@@ -428,20 +438,36 @@ export default function TransactionsList({
     setShowMonthPicker(false);
   };
 
-  const emitAlertErro = (message: string) => {
-    if (Platform.OS === "web") {
-      window.alert(`Sessão expirada\n\n${message}`);
-      signOut();
-    } else {
-      Alert.alert("Sessão expirada", message, [
-        {
-          text: "OK",
-          onPress: async () => {
-            await signOut();
-          },
-        },
-      ]);
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      onClose,
+    });
+  };
+
+  const closeAlert = () => {
+    const callback = alertConfig.onClose;
+
+    setAlertConfig({
+      visible: false,
+      title: "",
+      message: "",
+      onClose: undefined,
+    });
+
+    if (callback) {
+      setTimeout(() => {
+        callback();
+      }, 200);
     }
+  };
+
+  const emitAlertErro = (message: string) => {
+    showAlert("Sessão expirada", message, () => {
+      signOut();
+    });
   };
 
   return (
@@ -783,6 +809,13 @@ export default function TransactionsList({
         cancelText={modalConfig.cancelText}
         onCancel={closeModal}
         onConfirm={modalConfig.onConfirm}
+      />
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={closeAlert}
       />
     </>
   );
