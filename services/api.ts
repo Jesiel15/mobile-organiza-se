@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { authEvents } from "./auth-events";
 
 const getBaseUrl = () => {
   if (Platform.OS === "web") {
@@ -48,4 +49,16 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Novo: interceptor de response, detecta token expirado/inválido
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const msg = error.response?.data?.msg;
+      authEvents.emitUnauthorized(msg);
+    }
+    return Promise.reject(error);
+  }
 );

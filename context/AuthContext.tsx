@@ -1,5 +1,13 @@
+import { authEvents } from "@/services/auth-events";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { Alert, Platform } from "react-native";
 import { api } from "../services/api";
 
 interface User {
@@ -28,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isHandlingUnauthorized = useRef(false);
 
   useEffect(() => {
     async function loadStorageData() {
@@ -48,6 +57,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadStorageData();
   }, []);
 
+  const signOut = async () => {
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+  };
+
+  // Escuta o evento de 401 emitido pelo interceptor do api.ts,
+  // mostra um alerta pro usuário e só desloga depois que ele confirmar.
+  useEffect(() => {
+    const unsubscribe = authEvents.onUnauthorized((message) => {
+      if (isHandlingUnauthorized.current) return;
+      isHandlingUnauthorized.current = true;
+
+      const finalMessage =
+        message || "Sua sessão expirou. Faça login novamente.";
+
+      if (Platform.OS === "web") {
+        window.alert(`Sessão expirada\n\n${finalMessage}`);
+        signOut();
+      } else {
+        Alert.alert("Sessão expirada", finalMessage, [
+          {
+            text: "OK",
+            onPress: async () => {
+              await signOut();
+            },
+          },
+        ]);
+      }
+    });
+    return unsubscribe;
+  }, []);
+
   const signIn = async (email: string, password: string) => {
     const response = await api.post("/login", { email, password });
     const { token: userToken, user: userData } = response.data;
@@ -57,6 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setToken(userToken);
     setUser(userData);
+    isHandlingUnauthorized.current = false; // nova sessão, libera a trava
   };
 
   const signUp = async ({
@@ -76,13 +120,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setToken(userToken);
     setUser(userData);
-  };
-
-  const signOut = async () => {
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
-    setToken(null);
-    setUser(null);
+    isHandlingUnauthorized.current = false; // nova sessão, libera a trava
   };
 
   const updateUser = async (updatedData: Partial<User>) => {
