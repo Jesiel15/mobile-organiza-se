@@ -112,17 +112,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: string;
     password: string;
   }) => {
-    const response = await api.post("/register", { name, email, password });
+    // Envie com as chaves exatas em inglês exigidas pelo Laravel (name e password)
+    const response = await api.post("/register", {
+      name,
+      email,
+      password,
+    });
+  
     const { token: userToken, user: userData } = response.data;
-
+  
     await AsyncStorage.setItem("token", userToken);
     await AsyncStorage.setItem("user", JSON.stringify(userData));
-
+  
     setToken(userToken);
     setUser(userData);
-    isHandlingUnauthorized.current = false; // nova sessão, libera a trava
+    isHandlingUnauthorized.current = false;
   };
-
+  
   const updateUser = async (updatedData: Partial<User>) => {
     if (!user) return;
 

@@ -30,6 +30,15 @@ export default function RegisterScreen() {
 
   const [errorMessage, setErrorMessage] = useState("");
 
+  const validatePassword = (pass: string) => {
+    // Extrai todas as letras e todos os números em arrays
+    const letters = pass.match(/[a-zA-Z]/g) || [];
+    const numbers = pass.match(/[0-9]/g) || [];
+
+    // Valida as quantidades mínimas exigidas
+    return letters.length >= 4 && numbers.length >= 2;
+  };
+
   const handleRegister = async () => {
     if (!nome || !email || !confirmEmail || !senha || !confirmSenha) {
       setErrorMessage("Preencha todos os campos.");
@@ -46,35 +55,26 @@ export default function RegisterScreen() {
       return;
     }
 
+    // Validação da regra da senha
+    if (!validatePassword(senha)) {
+      setErrorMessage("A senha deve ter no mínimo 4 letras e 2 números.");
+      return;
+    }
+
     try {
       setErrorMessage("");
       setLoading(true);
 
-      // Certifique-se se sua API espera 'name'/'password' OU 'nome'/'senha'
       await signUp({
         name: nome.trim(),
         email: email.trim(),
         password: senha,
       });
     } catch (error: any) {
-      if (!error.response) {
-        setErrorMessage(
-          "Não foi possível conectar ao servidor. Tente novamente."
-        );
-        return;
-      }
-
-      const backendData = error.response.data;
-
-      // Extrai mensagens no formato string ou array (comum em validações DTO)
+      const backendData = error.response?.data;
+      // Aqui o backend envia 'msg': 'A senha deve conter no mínimo 4 letras e 2 números.'
       const message =
-        backendData?.msg ||
-        (Array.isArray(backendData?.message)
-          ? backendData.message[0]
-          : backendData?.message) ||
-        backendData?.error ||
-        "Não foi possível realizar o cadastro.";
-
+        backendData?.msg || "Não foi possível realizar o cadastro.";
       setErrorMessage(message);
     } finally {
       setLoading(false);
