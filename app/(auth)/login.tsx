@@ -1,9 +1,10 @@
 import { styles } from "@/styles/login.styles";
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   Text,
   TextInput,
@@ -138,7 +139,12 @@ export default function LoginScreen() {
       <View style={[styles.illustrationPanel, isWide && styles.panelFlex]}>
         <Text style={styles.illustrationTitle}>Organiza-se</Text>
         <View style={styles.iconBadge}>
-          <FontAwesome5 name="dollar-sign" size={28} color="#3a6ea5" />
+          {/* <FontAwesome5 name="dollar-sign" size={28} color="#3a6ea5" /> */}
+          <Image
+            source={require("../../assets/(images)/logo.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </View>
       </View>
     </View>

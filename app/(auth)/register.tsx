@@ -1,16 +1,16 @@
 import { styles } from "@/styles/register.styles";
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
+  Image,
   Pressable,
   Text,
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 
@@ -28,35 +28,54 @@ export default function RegisterScreen() {
   const [showConfirmSenha, setShowConfirmSenha] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleRegister = async () => {
     if (!nome || !email || !confirmEmail || !senha || !confirmSenha) {
-      Alert.alert("Erro", "Preencha todos os campos.");
+      setErrorMessage("Preencha todos os campos.");
       return;
     }
 
-    if (email !== confirmEmail) {
-      Alert.alert("Erro", "Os emails informados não coincidem.");
+    if (email.trim() !== confirmEmail.trim()) {
+      setErrorMessage("Os e-mails informados não coincidem.");
       return;
     }
 
     if (senha !== confirmSenha) {
-      Alert.alert("Erro", "As senhas informadas não coincidem.");
+      setErrorMessage("As senhas informadas não coincidem.");
       return;
     }
 
     try {
+      setErrorMessage("");
       setLoading(true);
+
+      // Certifique-se se sua API espera 'name'/'password' OU 'nome'/'senha'
       await signUp({
-        name: nome,
-        email,
+        name: nome.trim(),
+        email: email.trim(),
         password: senha,
       });
     } catch (error: any) {
-      // Captura a chave 'msg' retornada pelo controller
+      if (!error.response) {
+        setErrorMessage(
+          "Não foi possível conectar ao servidor. Tente novamente."
+        );
+        return;
+      }
+
+      const backendData = error.response.data;
+
+      // Extrai mensagens no formato string ou array (comum em validações DTO)
       const message =
-        error.response?.data?.msg ||
-        "Não foi possível realizar o cadastro. Verifique os dados.";
-      Alert.alert("Erro no Cadastro", message);
+        backendData?.msg ||
+        (Array.isArray(backendData?.message)
+          ? backendData.message[0]
+          : backendData?.message) ||
+        backendData?.error ||
+        "Não foi possível realizar o cadastro.";
+
+      setErrorMessage(message);
     } finally {
       setLoading(false);
     }
@@ -68,7 +87,11 @@ export default function RegisterScreen() {
       <View style={[styles.illustrationPanel, isWide && styles.panelFlex]}>
         <Text style={styles.illustrationTitle}>Organiza-se</Text>
         <View style={styles.iconBadge}>
-          <FontAwesome5 name="dollar-sign" size={28} color="#3a6ea5" />
+          <Image
+            source={require("../../assets/(images)/logo.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </View>
       </View>
 
@@ -82,7 +105,10 @@ export default function RegisterScreen() {
             placeholder="Digite seu nome e sobrenome"
             placeholderTextColor="#8a8a8a"
             value={nome}
-            onChangeText={setNome}
+            onChangeText={(text) => {
+              setNome(text);
+              if (errorMessage) setErrorMessage("");
+            }}
           />
 
           <TextInput
@@ -90,7 +116,10 @@ export default function RegisterScreen() {
             placeholder="Digite seu email"
             placeholderTextColor="#8a8a8a"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errorMessage) setErrorMessage("");
+            }}
             autoCapitalize="none"
             keyboardType="email-address"
           />
@@ -100,7 +129,10 @@ export default function RegisterScreen() {
             placeholder="Confirme seu email"
             placeholderTextColor="#8a8a8a"
             value={confirmEmail}
-            onChangeText={setConfirmEmail}
+            onChangeText={(text) => {
+              setConfirmEmail(text);
+              if (errorMessage) setErrorMessage("");
+            }}
             autoCapitalize="none"
             keyboardType="email-address"
           />
@@ -111,7 +143,10 @@ export default function RegisterScreen() {
               placeholder="Digite sua senha"
               placeholderTextColor="#8a8a8a"
               value={senha}
-              onChangeText={setSenha}
+              onChangeText={(text) => {
+                setSenha(text);
+                if (errorMessage) setErrorMessage("");
+              }}
               secureTextEntry={!showSenha}
             />
             <Pressable onPress={() => setShowSenha(!showSenha)}>
@@ -129,7 +164,10 @@ export default function RegisterScreen() {
               placeholder="Confirme sua senha"
               placeholderTextColor="#8a8a8a"
               value={confirmSenha}
-              onChangeText={setConfirmSenha}
+              onChangeText={(text) => {
+                setConfirmSenha(text);
+                if (errorMessage) setErrorMessage("");
+              }}
               secureTextEntry={!showConfirmSenha}
             />
             <Pressable onPress={() => setShowConfirmSenha(!showConfirmSenha)}>
@@ -140,6 +178,14 @@ export default function RegisterScreen() {
               />
             </Pressable>
           </View>
+
+          {/* Exibição inline do erro */}
+          {!!errorMessage && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle-outline" size={16} color="#e0533d" />
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          )}
 
           <TouchableOpacity
             style={styles.primaryButton}
