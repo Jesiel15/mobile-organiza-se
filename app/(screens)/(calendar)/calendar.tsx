@@ -378,8 +378,14 @@ export default function CalendarScreen() {
               </View>
 
               <View style={styles.weekDaysHeader}>
-                {WEEK_DAYS.map((dayName) => (
-                  <View key={dayName} style={styles.weekDayCell}>
+                {WEEK_DAYS.map((dayName, index) => (
+                  <View
+                    key={dayName}
+                    style={[
+                      styles.weekDayCell,
+                      index === 6 && { borderRightWidth: 0 },
+                    ]}
+                  >
                     <Text style={styles.weekDayText}>{dayName}</Text>
                   </View>
                 ))}
@@ -388,6 +394,7 @@ export default function CalendarScreen() {
               <View style={styles.daysGrid}>
                 {gridDays.map((dayItem, index) => {
                   const dayEvents = eventsByDate[dayItem.dateString] || [];
+                  const isFirstColumn = index % 7 === 0;
 
                   return (
                     <View
@@ -396,6 +403,7 @@ export default function CalendarScreen() {
                         styles.dayCell,
                         !dayItem.isCurrentMonth && styles.otherMonthCell,
                         dayItem.isToday && styles.todayCell,
+                        !isFirstColumn && { borderLeftWidth: 0 }, // Evita borda dupla entre colunas
                       ]}
                     >
                       <Text

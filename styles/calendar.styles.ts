@@ -35,6 +35,7 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
     filterContainer: {
       marginBottom: 20,
       position: "relative",
+
       zIndex: 9999,
     },
     filterLabel: {
@@ -48,14 +49,13 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
       alignItems: "center",
       justifyContent: "space-between",
       backgroundColor: colors?.surface || "#363638",
-      borderColor: colors?.surfaceBorder || "#4A5568",
-      borderWidth: 1,
       borderRadius: 8,
       paddingLeft: 14,
       paddingRight: 0,
       height: 44,
       width: isMobile ? "100%" : 220,
       overflow: "hidden",
+      boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
     },
     customPickerText: {
       fontSize: 15,
@@ -78,8 +78,6 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
       width: isMobile ? "100%" : 320,
       backgroundColor: colors?.surface || "#2D3748",
       borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors?.surfaceBorder || "#4A5568",
       padding: 16,
       zIndex: 10000,
       elevation: 10,
@@ -146,18 +144,16 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
     calendarCard: {
       backgroundColor: colors?.surface || "#363638",
       borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors?.surfaceBorder || "#4A5568",
+      padding: isMobile ? 12 : 20,
       overflow: "hidden",
       zIndex: 1,
+      boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
     },
     calendarHeaderControls: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      padding: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: colors?.surfaceBorder || "#4A5568",
+      paddingBottom: 16,
     },
     headerLeftControls: {
       flexDirection: "row",
@@ -165,12 +161,10 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
       gap: 8,
     },
     navBtn: {
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      backgroundColor: colors?.backgroundHome || "#2D3748",
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      backgroundColor: colors?.blue || "#2D3748",
       borderRadius: 6,
-      borderWidth: 1,
-      borderColor: colors?.surfaceBorder || "#4A5568",
     },
     navBtnText: {
       fontSize: 13,
@@ -187,9 +181,9 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
     // --- GRADE DE DIAS E EVENTOS ---
     weekDaysHeader: {
       flexDirection: "row",
-      borderBottomWidth: 1,
-      borderBottomColor: colors?.surfaceBorder || "#4A5568",
       backgroundColor: colors?.backgroundHome || "#2D3748",
+      borderWidth: 1,
+      borderColor: colors?.surfaceBorder || "#4A5568",
     },
     weekDayCell: {
       flex: 1,
@@ -210,6 +204,7 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
     dayCell: {
       width: `${100 / 7}%`,
       minHeight: isMobile ? 80 : 110,
+      borderLeftWidth: 1,
       borderRightWidth: 1,
       borderBottomWidth: 1,
       borderColor: colors?.surfaceBorder || "#4A5568",
