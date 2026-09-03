@@ -1,7 +1,7 @@
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
-import { getCalendarStyles } from "@/styles/calendar.styles";
+import getCalendarStyles from "@/styles/calendar.styles";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -15,18 +15,18 @@ import {
 
 const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const MONTHS_LIST = [
-  "Jan",
-  "Fev",
-  "Mar",
-  "Abr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Set",
-  "Out",
-  "Nov",
-  "Dez",
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
 ];
 
 type RawExpense = {
@@ -111,7 +111,7 @@ export default function CalendarScreen() {
         setRawExpenses(extractArray<RawExpense>(expensesRes.data));
         setRawRevenues(extractArray<RawRevenue>(revenuesRes.data));
       } catch (err) {
-        console.warn("Erro ao buscar dados do calendário:", err);
+        console.warn("Erro ao carregar os dados do calendário:", err);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -124,7 +124,6 @@ export default function CalendarScreen() {
     };
   }, []);
 
-  // Manipulação de Mês/Ano pelo Popover
   const handleYearChange = (delta: number) => {
     setCurrentSelectedYear((prev) => prev + delta);
   };
@@ -141,7 +140,6 @@ export default function CalendarScreen() {
     setShowMonthPicker(false);
   };
 
-  // Botões do topo do calendário (< > Hoje)
   const handleMonthStep = (step: number) => {
     const newDate = new Date(
       monthYearFilter.getFullYear(),
@@ -152,7 +150,6 @@ export default function CalendarScreen() {
     setCurrentSelectedYear(newDate.getFullYear());
   };
 
-  // Agrupa os eventos pela data formatada (YYYY-MM-DD)
   const eventsByDate = useMemo(() => {
     const map: Record<string, CalendarEvent[]> = {};
 
@@ -187,7 +184,6 @@ export default function CalendarScreen() {
     return map;
   }, [rawExpenses, rawRevenues]);
 
-  // Gera os dias a serem exibidos na grade
   const gridDays = useMemo(() => {
     const year = monthYearFilter.getFullYear();
     const month = monthYearFilter.getMonth();
@@ -201,7 +197,6 @@ export default function CalendarScreen() {
     const days: GridDay[] = [];
     const todayStr = today.toISOString().split("T")[0];
 
-    // Dias do mês anterior
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
@@ -214,7 +209,6 @@ export default function CalendarScreen() {
       });
     }
 
-    // Dias do mês atual
     for (let day = 1; day <= totalDays; day++) {
       const monthFormatted = String(month + 1).padStart(2, "0");
       const dayFormatted = String(day).padStart(2, "0");
@@ -228,7 +222,6 @@ export default function CalendarScreen() {
       });
     }
 
-    // Dias do próximo mês
     const remainingDays = (7 - (days.length % 7)) % 7;
     for (let day = 1; day <= remainingDays; day++) {
       const nextDate = new Date(year, month + 1, day);
@@ -253,188 +246,194 @@ export default function CalendarScreen() {
     <View style={styles.container}>
       <Sidebar activeScreen="Calendário" />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-      >
-        <Text style={styles.title}>Calendário 📅</Text>
+      <View style={styles.mainContent}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+        >
+          <Text style={styles.title}>Calendário 📅</Text>
 
-        {/* Filtro por Mês/Ano Restaurado */}
-        <View style={styles.filterContainer}>
-          <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
+          <View style={styles.filterContainer}>
+            <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
 
-          <TouchableOpacity
-            style={styles.customPickerTrigger}
-            activeOpacity={0.7}
-            onPress={() => setShowMonthPicker((prev) => !prev)}
-          >
-            <Text style={styles.customPickerText}>
-              {String(monthYearFilter.getMonth() + 1).padStart(2, "0")}/
-              {monthYearFilter.getFullYear()}
-            </Text>
+            <TouchableOpacity
+              style={styles.customPickerTrigger}
+              activeOpacity={0.8}
+              onPress={() => setShowMonthPicker((prev) => !prev)}
+            >
+              <Text style={styles.customPickerText}>
+                {String(monthYearFilter.getMonth() + 1).padStart(2, "0")}/
+                {monthYearFilter.getFullYear()}
+              </Text>
 
-            <View style={styles.iconContainer}>
-              <Ionicons name="calendar-outline" size={16} color="#FFFFFF" />
-            </View>
-          </TouchableOpacity>
+              <View style={styles.iconContainer}>
+                <Ionicons name="calendar-outline" size={20} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
 
-          {showMonthPicker && (
-            <View style={styles.popoverCard}>
-              <View style={styles.popoverHeader}>
-                <TouchableOpacity
-                  onPress={() => handleYearChange(-1)}
-                  style={styles.arrowButton}
-                >
-                  <Ionicons name="chevron-back" size={18} color="#A0AEC0" />
-                </TouchableOpacity>
-                <Text style={styles.popoverYearText}>
-                  {currentSelectedYear}
+            {showMonthPicker && (
+              <View style={styles.popoverCard}>
+                <View style={styles.popoverHeader}>
+                  <TouchableOpacity
+                    onPress={() => handleYearChange(-1)}
+                    style={styles.arrowButton}
+                  >
+                    <Ionicons
+                      name="chevron-back"
+                      size={20}
+                      color={colors?.textColor || "#FFFFFF"}
+                    />
+                  </TouchableOpacity>
+                  <Text style={styles.popoverYearText}>
+                    {currentSelectedYear}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleYearChange(1)}
+                    style={styles.arrowButton}
+                  >
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color={colors?.textColor || "#FFFFFF"}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.monthsGrid}>
+                  {MONTHS_LIST.map((monthName, index) => {
+                    const isSelected =
+                      index === monthYearFilter.getMonth() &&
+                      currentSelectedYear === monthYearFilter.getFullYear();
+                    return (
+                      <TouchableOpacity
+                        key={monthName}
+                        style={[
+                          styles.monthGridItem,
+                          isSelected && styles.monthGridItemSelected,
+                        ]}
+                        onPress={() => handleSelectMonth(index)}
+                      >
+                        <Text
+                          style={[
+                            styles.monthGridText,
+                            isSelected && styles.monthGridTextSelected,
+                          ]}
+                        >
+                          {monthName}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                <View style={styles.popoverFooter}>
+                  <TouchableOpacity onPress={handleSetCurrentMonth}>
+                    <Text style={styles.footerActionText}>este mês</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+
+          {isLoading ? (
+            <ActivityIndicator
+              color={colors?.primary || "#3182CE"}
+              style={styles.loader}
+            />
+          ) : (
+            <View style={styles.calendarCard}>
+              <View style={styles.calendarHeaderControls}>
+                <View style={styles.headerLeftControls}>
+                  <TouchableOpacity
+                    style={styles.navBtn}
+                    onPress={() => handleMonthStep(-1)}
+                  >
+                    <Ionicons
+                      name="chevron-back"
+                      size={16}
+                      color={colors?.textColor || "#FFFFFF"}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.navBtn}
+                    onPress={() => handleMonthStep(1)}
+                  >
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={colors?.textColor || "#FFFFFF"}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.navBtn}
+                    onPress={handleSetCurrentMonth}
+                  >
+                    <Text style={styles.navBtnText}>Hoje</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={styles.currentMonthTitle}>
+                  {formattedMonthTitle}
                 </Text>
-                <TouchableOpacity
-                  onPress={() => handleYearChange(1)}
-                  style={styles.arrowButton}
-                >
-                  <Ionicons name="chevron-forward" size={18} color="#A0AEC0" />
-                </TouchableOpacity>
               </View>
 
-              <View style={styles.monthsGrid}>
-                {MONTHS_LIST.map((monthName, index) => {
-                  const isSelected =
-                    index === monthYearFilter.getMonth() &&
-                    currentSelectedYear === monthYearFilter.getFullYear();
+              <View style={styles.weekDaysHeader}>
+                {WEEK_DAYS.map((dayName) => (
+                  <View key={dayName} style={styles.weekDayCell}>
+                    <Text style={styles.weekDayText}>{dayName}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.daysGrid}>
+                {gridDays.map((dayItem, index) => {
+                  const dayEvents = eventsByDate[dayItem.dateString] || [];
+
                   return (
-                    <TouchableOpacity
-                      key={monthName}
+                    <View
+                      key={`${dayItem.dateString}-${index}`}
                       style={[
-                        styles.monthGridItem,
-                        isSelected && styles.monthGridItemSelected,
+                        styles.dayCell,
+                        !dayItem.isCurrentMonth && styles.otherMonthCell,
+                        dayItem.isToday && styles.todayCell,
                       ]}
-                      onPress={() => handleSelectMonth(index)}
                     >
                       <Text
                         style={[
-                          styles.monthGridText,
-                          isSelected && styles.monthGridTextSelected,
+                          styles.dayNumber,
+                          !dayItem.isCurrentMonth && styles.otherMonthDayNumber,
                         ]}
                       >
-                        {monthName}
+                        {dayItem.dayNumber}
                       </Text>
-                    </TouchableOpacity>
+
+                      <View style={styles.eventsContainer}>
+                        {dayEvents.map((evt) => (
+                          <View key={evt.id} style={styles.eventCard}>
+                            <View
+                              style={[
+                                styles.eventDot,
+                                { backgroundColor: evt.color },
+                              ]}
+                            />
+                            <Text
+                              style={styles.eventText}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              {evt.title}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
                   );
                 })}
               </View>
-
-              <View style={styles.popoverFooter}>
-                <TouchableOpacity onPress={handleSetCurrentMonth}>
-                  <Text style={styles.footerActionText}>Este mês</Text>
-                </TouchableOpacity>
-              </View>
             </View>
           )}
-        </View>
-
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator color="#3182CE" />
-            <Text style={styles.loadingText}>Carregando lançamentos...</Text>
-          </View>
-        ) : (
-          <View style={styles.gridContainer}>
-            {/* Controles Internos de Navegação */}
-            <View style={styles.calendarHeaderControls}>
-              <View style={styles.headerLeftControls}>
-                <TouchableOpacity
-                  style={styles.navBtn}
-                  onPress={() => handleMonthStep(-1)}
-                >
-                  <Ionicons
-                    name="chevron-back"
-                    size={16}
-                    color={colors.textColor}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.navBtn}
-                  onPress={() => handleMonthStep(1)}
-                >
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={colors.textColor}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.navBtn}
-                  onPress={handleSetCurrentMonth}
-                >
-                  <Text style={styles.navBtnText}>Hoje</Text>
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.currentMonthTitle}>
-                {formattedMonthTitle}
-              </Text>
-            </View>
-
-            {/* Cabeçalho dos dias da semana */}
-            <View style={styles.weekDaysHeader}>
-              {WEEK_DAYS.map((dayName) => (
-                <View key={dayName} style={styles.weekDayCell}>
-                  <Text style={styles.weekDayText}>{dayName}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Grade de dias com dados inseridos diretamente na célula */}
-            <View style={styles.daysGrid}>
-              {gridDays.map((dayItem, index) => {
-                const dayEvents = eventsByDate[dayItem.dateString] || [];
-
-                return (
-                  <View
-                    key={`${dayItem.dateString}-${index}`}
-                    style={[
-                      styles.dayCell,
-                      !dayItem.isCurrentMonth && styles.otherMonthCell,
-                      dayItem.isToday && styles.todayCell,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.dayNumber,
-                        !dayItem.isCurrentMonth && styles.otherMonthDayNumber,
-                      ]}
-                    >
-                      {dayItem.dayNumber}
-                    </Text>
-
-                    <View style={styles.eventsContainer}>
-                      {dayEvents.map((evt) => (
-                        <View key={evt.id} style={styles.eventCard}>
-                          <View
-                            style={[
-                              styles.eventDot,
-                              { backgroundColor: evt.color },
-                            ]}
-                          />
-                          <Text
-                            style={styles.eventText}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            {evt.title}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        )}
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 }

@@ -1,156 +1,163 @@
+import { ThemeColors } from "@/constants/colors";
 import { StyleSheet } from "react-native";
-import { ThemeColors } from "../constants/colors";
 
-export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) => {
-  const isDark =
-    colors.backgroundHome?.toLowerCase() !== "#ffffff" &&
-    colors.backgroundHome !== "#f8fafc";
-
-  const cardBg = isDark ? "#363638" : "#FFFFFF";
-  const textColor = colors.textColor || (isDark ? "#FFFFFF" : "#1A202C");
-  const borderColor = isDark ? "#4A5568" : "#E2E8F0";
-  const mutedText = isDark ? "#A0AEC0" : "#718096";
-
-  return StyleSheet.create({
+export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
+  StyleSheet.create({
     container: {
       flex: 1,
       flexDirection: isMobile ? "column" : "row",
-      backgroundColor: colors.backgroundHome || "#1E1E1E",
+      backgroundColor: colors?.backgroundHome || "#1E1E1E",
+      width: "100%",
+      minHeight: "100%",
+    },
+    mainContent: {
+      flex: 1,
+      width: "100%",
     },
     scrollView: {
       flex: 1,
+      width: "100%",
     },
     content: {
-      flex: 1,
+      flexGrow: 1,
       padding: isMobile ? 12 : 24,
-      paddingBottom: isMobile ? 90 : 24,
+      paddingBottom: isMobile ? 120 : 32,
       paddingTop: isMobile ? 64 : 24,
-      marginLeft: isMobile ? 0 : 26,
     },
     title: {
       fontSize: 24,
-      fontWeight: "bold",
+      fontWeight: "700",
+      color: colors?.textColor || "#FFFFFF",
       marginBottom: 16,
-      color: textColor,
     },
 
-    // Container do Filtro (Restaurado)
+    // --- FILTRO DE MÊS/ANO ---
     filterContainer: {
       marginBottom: 20,
-      width: 160,
-      zIndex: 10,
+      position: "relative",
+      zIndex: 9999,
     },
     filterLabel: {
-      fontSize: 12,
+      fontSize: 16,
       fontWeight: "600",
-      marginBottom: 6,
-      color: textColor,
+      color: colors?.textColor || "#FFFFFF",
+      marginBottom: 8,
     },
     customPickerTrigger: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      backgroundColor: cardBg,
+      backgroundColor: colors?.surface || "#363638",
+      borderColor: colors?.surfaceBorder || "#4A5568",
       borderWidth: 1,
-      borderColor: isDark ? "#4A5568" : "#3182CE",
-      borderRadius: 6,
-      paddingLeft: 12,
-      paddingRight: 4,
-      height: 38,
+      borderRadius: 8,
+      paddingLeft: 14,
+      paddingRight: 0,
+      height: 44,
+      width: isMobile ? "100%" : 220,
+      overflow: "hidden",
     },
     customPickerText: {
-      fontSize: 14,
-      color: textColor,
+      fontSize: 15,
       fontWeight: "500",
+      color: colors?.textColor || "#FFFFFF",
     },
     iconContainer: {
-      backgroundColor: "#3182CE",
-      borderRadius: 4,
-      padding: 5,
+      backgroundColor: colors?.primary || "#3182CE",
+      height: "100%",
+      width: 44,
       alignItems: "center",
       justifyContent: "center",
     },
 
-    // Card Popover de Seleção de Mês/Ano
+    // --- POPOVER DO SELETOR DE MÊS/ANO ---
     popoverCard: {
       position: "absolute",
-      top: 68,
+      top: 76,
       left: 0,
-      width: 250,
-      backgroundColor: cardBg,
-      borderRadius: 8,
-      padding: 12,
+      width: isMobile ? "100%" : 320,
+      backgroundColor: colors?.surface || "#2D3748",
+      borderRadius: 12,
       borderWidth: 1,
-      borderColor: borderColor,
-      shadowColor: "#000",
+      borderColor: colors?.surfaceBorder || "#4A5568",
+      padding: 16,
+      zIndex: 10000,
+      elevation: 10,
+      shadowColor: "#000000",
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
-      shadowRadius: 6,
-      elevation: 8,
-      zIndex: 99,
+      shadowRadius: 8,
     },
     popoverHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 12,
-    },
-    popoverYearText: {
-      color: textColor,
-      fontWeight: "bold",
-      fontSize: 16,
+      marginBottom: 16,
     },
     arrowButton: {
-      padding: 6,
+      padding: 4,
+    },
+    popoverYearText: {
+      fontSize: 20,
+      fontWeight: "600",
+      color: colors?.textColor || "#FFFFFF",
     },
     monthsGrid: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: 6,
+      gap: 8,
       justifyContent: "space-between",
     },
     monthGridItem: {
-      width: "30%",
-      paddingVertical: 8,
+      width: "22%",
+      height: 36,
+      borderRadius: 8,
+      justifyContent: "center",
       alignItems: "center",
-      borderRadius: 6,
-      backgroundColor: isDark ? "#1A202C" : "#EDF2F7",
+      backgroundColor: colors?.backgroundHome || "#1A202C",
     },
     monthGridItemSelected: {
-      backgroundColor: "#3182CE",
+      backgroundColor: colors?.primary || "#3182CE",
     },
     monthGridText: {
-      color: mutedText,
-      fontSize: 12,
-      fontWeight: "600",
+      fontSize: 14,
+      fontWeight: "500",
+      color: colors?.gray || "#A0AEC0",
+      textTransform: "lowercase",
     },
     monthGridTextSelected: {
       color: "#FFFFFF",
+      fontWeight: "700",
     },
     popoverFooter: {
-      marginTop: 12,
-      paddingTop: 8,
+      marginTop: 16,
+      paddingTop: 12,
       borderTopWidth: 1,
-      borderTopColor: borderColor,
-      alignItems: "center",
+      borderTopColor: colors?.surfaceBorder || "#4A5568",
+      alignItems: "flex-end",
     },
     footerActionText: {
-      color: "#3182CE",
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: "600",
+      color: colors?.primary || "#3182CE",
     },
 
-    // Controles do Calendário
+    // --- ESTRUTURA DO CALENDÁRIO ---
+    calendarCard: {
+      backgroundColor: colors?.surface || "#363638",
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors?.surfaceBorder || "#4A5568",
+      overflow: "hidden",
+      zIndex: 1,
+    },
     calendarHeaderControls: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 12,
-      backgroundColor: cardBg,
-      padding: 10,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: borderColor,
+      padding: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors?.surfaceBorder || "#4A5568",
     },
     headerLeftControls: {
       flexDirection: "row",
@@ -158,92 +165,80 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) => {
       gap: 8,
     },
     navBtn: {
-      paddingHorizontal: 12,
+      paddingHorizontal: 10,
       paddingVertical: 6,
-      backgroundColor: isDark ? "#2D3748" : "#EDF2F7",
-      borderRadius: 4,
+      backgroundColor: colors?.backgroundHome || "#2D3748",
+      borderRadius: 6,
       borderWidth: 1,
-      borderColor: borderColor,
+      borderColor: colors?.surfaceBorder || "#4A5568",
     },
     navBtnText: {
       fontSize: 13,
       fontWeight: "600",
-      color: textColor,
+      color: colors?.textColor || "#FFFFFF",
     },
     currentMonthTitle: {
       fontSize: 18,
-      fontWeight: "bold",
-      color: textColor,
+      fontWeight: "700",
+      color: colors?.textColor || "#FFFFFF",
       textTransform: "capitalize",
     },
 
-    // Card Principal e Grade (Grid)
-    gridContainer: {
-      backgroundColor: cardBg,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: borderColor,
-      overflow: "hidden",
-    },
+    // --- GRADE DE DIAS E EVENTOS ---
     weekDaysHeader: {
       flexDirection: "row",
       borderBottomWidth: 1,
-      borderBottomColor: borderColor,
-      backgroundColor: isDark ? "#2D3748" : "#F7FAFC",
+      borderBottomColor: colors?.surfaceBorder || "#4A5568",
+      backgroundColor: colors?.backgroundHome || "#2D3748",
     },
     weekDayCell: {
       flex: 1,
       paddingVertical: 8,
       alignItems: "center",
       borderRightWidth: 1,
-      borderRightColor: borderColor,
+      borderRightColor: colors?.surfaceBorder || "#4A5568",
     },
     weekDayText: {
       fontSize: 12,
-      fontWeight: "bold",
-      color: textColor,
+      fontWeight: "700",
+      color: colors?.textColor || "#FFFFFF",
     },
-
-    // Células do Dia
     daysGrid: {
       flexDirection: "row",
       flexWrap: "wrap",
     },
     dayCell: {
       width: `${100 / 7}%`,
-      minHeight: isMobile ? 85 : 115,
+      minHeight: isMobile ? 80 : 110,
       borderRightWidth: 1,
       borderBottomWidth: 1,
-      borderColor: borderColor,
+      borderColor: colors?.surfaceBorder || "#4A5568",
       padding: 4,
-      backgroundColor: cardBg,
+      backgroundColor: colors?.surface || "#363638",
     },
     otherMonthCell: {
-      backgroundColor: isDark ? "#28282A" : "#FAFAFA",
+      opacity: 0.4,
     },
     todayCell: {
-      backgroundColor: isDark ? "#2C3B4E" : "#FEFCBF",
+      backgroundColor: "rgba(49, 130, 206, 0.15)",
     },
     dayNumber: {
       fontSize: 12,
       fontWeight: "600",
-      color: textColor,
+      color: colors?.textColor || "#FFFFFF",
       alignSelf: "flex-end",
       marginBottom: 4,
       marginRight: 2,
     },
     otherMonthDayNumber: {
-      color: mutedText,
-      opacity: 0.5,
+      color: colors?.gray || "#A0AEC0",
     },
-
-    // Cartões de Eventos / Lançamentos nos Dias
     eventsContainer: {
       gap: 3,
     },
     eventCard: {
-      backgroundColor: isDark ? "rgba(49, 130, 206, 0.2)" : "#EBF8FF",
-      borderRadius: 3,
+      backgroundColor: "rgba(255, 255, 255, 0.08)",
+      borderRadius: 4,
       paddingVertical: 2,
       paddingHorizontal: 4,
       flexDirection: "row",
@@ -257,20 +252,13 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) => {
     },
     eventText: {
       fontSize: 11,
-      color: textColor,
+      color: colors?.textColor || "#FFFFFF",
       fontWeight: "500",
       flex: 1,
     },
-
-    loadingContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
+    loader: {
       marginVertical: 20,
     },
-    loadingText: {
-      color: textColor,
-      fontSize: 14,
-    },
   });
-};
+
+export default getCalendarStyles;
