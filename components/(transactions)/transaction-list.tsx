@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 import { getTransactionsStyles } from "@/styles/(components)/transactions-lists.styles";
+import { useFocusEffect } from "expo-router";
 import AlertModal from "../(alert-modal)/alert-modal";
 import ConfirmModal from "../(confirm-modal)/confirm-modal";
 import SummaryCards from "../(summary)/summary-cards";
@@ -93,6 +94,7 @@ export default function TransactionsList({
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const styles = getTransactionsStyles(colors, isMobile);
+  const isFirstFocus = useRef(true);
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [revenues, setRevenues] = useState<Revenue[]>([]);
@@ -213,10 +215,6 @@ export default function TransactionsList({
     []
   );
 
-  useEffect(() => {
-    applyFilter(allExpenses, allRevenues, monthYearFilter);
-  }, [monthYearFilter, allExpenses, allRevenues, applyFilter]);
-
   // Busca despesas/receitas na API e atualiza as listas "mestre",
   // SEM mexer no mês/ano filtrado atualmente. Use esta função sempre que
   // precisar recarregar os dados após excluir, editar ou replicar algo.
@@ -259,6 +257,16 @@ export default function TransactionsList({
       }
     },
     [applyFilter, monthYearFilter]
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      refreshTransactions();
+    }, [refreshTransactions])
   );
 
   // Carga inicial: aqui sim faz sentido restaurar o filtro salvo (ao voltar
