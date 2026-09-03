@@ -14,7 +14,7 @@ import {
   View,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import Svg, { Line, Rect, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, Line, Rect, Text as SvgText } from "react-native-svg";
 
 const MONTHS_SHORT = [
   "Jan",
@@ -184,7 +184,15 @@ export default function ChartsScreen() {
     y: number;
   } | null>(null);
 
-  // Dados vindos da API (buscados uma vez; a filtragem por ano é feita no client)
+  const [hoveredLinePoint, setHoveredLinePoint] = useState<{
+    month: string;
+    label: string;
+    color: string;
+    value: number;
+    x: number;
+    y: number;
+  } | null>(null);
+
   const [rawExpenses, setRawExpenses] = useState<RawExpense[]>([]);
   const [rawRevenues, setRawRevenues] = useState<RawRevenue[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -276,12 +284,19 @@ export default function ChartsScreen() {
   const totals = monthlyIncomes.map((inc, idx) => inc - monthlyExpenses[idx]);
 
   // Preparação de Datasets para o LineChart
-  const activeDatasetsLine = [];
+  const activeDatasetsLine: Array<{
+    data: number[];
+    color: (opacity?: number) => string;
+    strokeWidth: number;
+    datasetKey: "expenses" | "incomes" | "total";
+  }> = [];
+
   if (showExpenses) {
     activeDatasetsLine.push({
       data: monthlyExpenses,
       color: (opacity = 1) => `rgba(229, 62, 62, ${opacity})`,
       strokeWidth: 2.5,
+      datasetKey: "expenses",
     });
   }
   if (showIncomes) {
@@ -289,6 +304,7 @@ export default function ChartsScreen() {
       data: monthlyIncomes,
       color: (opacity = 1) => `rgba(56, 161, 105, ${opacity})`,
       strokeWidth: 2.5,
+      datasetKey: "incomes",
     });
   }
   if (showTotal) {
@@ -296,6 +312,7 @@ export default function ChartsScreen() {
       data: totals,
       color: (opacity = 1) => `rgba(49, 130, 206, ${opacity})`,
       strokeWidth: 2.5,
+      datasetKey: "total",
     });
   }
 
@@ -329,15 +346,48 @@ export default function ChartsScreen() {
       strokeDasharray: "4",
     },
     propsForDots: {
-      r: "4",
-      strokeWidth: "2",
-      stroke: cardBg,
+      r: "0",
     },
     formatYLabel: (y: string) => formatBRL(Number(y)),
     formatXLabel: (x: string) => x,
   };
 
-  // Renderizador do Gráfico de Barras Agrupadas Customizado em SVG
+  const handlePointSelect = (
+    index: number,
+    value: number,
+    datasetKey: string,
+    x: number,
+    y: number
+  ) => {
+    const month = MONTHS_SHORT[index];
+    let label = "Valor";
+    let color = "#ffffff";
+
+    if (datasetKey === "expenses") {
+      label = "Despesas Anuais";
+      color = "#e53e3e";
+    } else if (datasetKey === "incomes") {
+      label = "Receitas Anuais";
+      color = "#38a169";
+    } else if (datasetKey === "total") {
+      label = "Total sobra/falta";
+      color = "#3182ce";
+    }
+
+    setHoveredLinePoint((prev) =>
+      prev && prev.x === x && prev.y === y
+        ? null
+        : {
+            month,
+            value,
+            x,
+            y,
+            color,
+            label,
+          }
+    );
+  };
+
   const renderGroupedBarChart = () => {
     const activeSeriesCount =
       (showExpenses ? 1 : 0) + (showIncomes ? 1 : 0) + (showTotal ? 1 : 0);
@@ -444,7 +494,6 @@ export default function ChartsScreen() {
             );
           })}
 
-          {/* Linha Zero */}
           <Line
             x1={paddingLeft}
             y1={zeroY}
@@ -495,7 +544,7 @@ export default function ChartsScreen() {
                         rx={1.5}
                         {...getBarInteractionProps(
                           label,
-                          "Despesas Anuais (R$)",
+                          "Despesas Anuais",
                           "#e53e3e",
                           val,
                           x,
@@ -524,7 +573,7 @@ export default function ChartsScreen() {
                         rx={1.5}
                         {...getBarInteractionProps(
                           label,
-                          "Receitas Anuais (R$)",
+                          "Receitas Anuais",
                           "#38a169",
                           val,
                           x,
@@ -553,7 +602,7 @@ export default function ChartsScreen() {
                         rx={1.5}
                         {...getBarInteractionProps(
                           label,
-                          "Total sobra/falta (R$)",
+                          "Total sobra/falta",
                           "#3182ce",
                           val,
                           x,
@@ -784,17 +833,113 @@ export default function ChartsScreen() {
           >
             <Text style={styles.chartCardTitle}>Visão em Linhas</Text>
             {activeDatasetsLine.length > 0 ? (
-              <LineChart
-                data={lineChartData}
-                width={chartWidth}
-                height={chartHeight}
-                chartConfig={baseChartConfig}
-                style={styles.chartStyle}
-                withInnerLines
-                withOuterLines={false}
-                bezier={false}
-                fromZero
-              />
+              <View style={{ position: "relative" }}>
+                <LineChart
+                  data={lineChartData}
+                  width={chartWidth}
+                  height={chartHeight}
+                  chartConfig={baseChartConfig}
+                  style={styles.chartStyle}
+                  withInnerLines
+                  withOuterLines={false}
+                  bezier={false}
+                  fromZero
+                  renderDotContent={({ x, y, index, indexData }) => {
+                    const matchedDataset = activeDatasetsLine.find(
+                      (ds) => ds.data[index] === indexData
+                    );
+
+                    if (!matchedDataset) return null;
+
+                    const dotColor = matchedDataset.color(1);
+
+                    return (
+                      <React.Fragment
+                        key={`dot-group-${matchedDataset.datasetKey}-${index}`}
+                      >
+                        {/* Ponto Visível */}
+                        <Circle
+                          cx={x}
+                          cy={y}
+                          r={5}
+                          fill={dotColor}
+                          stroke={cardBg}
+                          strokeWidth={2}
+                        />
+
+                        {/* Hitbox Invisível (Área de toque expandida para mobile e web) */}
+                        <Circle
+                          cx={x}
+                          cy={y}
+                          r={22}
+                          fill="transparent"
+                          onPress={() =>
+                            handlePointSelect(
+                              index,
+                              indexData,
+                              matchedDataset.datasetKey,
+                              x,
+                              y
+                            )
+                          }
+                          {...({
+                            onClick: () =>
+                              handlePointSelect(
+                                index,
+                                indexData,
+                                matchedDataset.datasetKey,
+                                x,
+                                y
+                              ),
+                            onMouseEnter: () =>
+                              handlePointSelect(
+                                index,
+                                indexData,
+                                matchedDataset.datasetKey,
+                                x,
+                                y
+                              ),
+                            onMouseLeave: () => setHoveredLinePoint(null),
+                            cursor: "pointer",
+                          } as any)}
+                        />
+                      </React.Fragment>
+                    );
+                  }}
+                />
+
+                {hoveredLinePoint && (
+                  <View
+                    pointerEvents="none"
+                    style={[
+                      styles.tooltipContainer,
+                      {
+                        left: Math.min(
+                          Math.max(hoveredLinePoint.x - 70, 4),
+                          chartWidth - 164
+                        ),
+                        top: Math.max(hoveredLinePoint.y - 65, 4),
+                      },
+                    ]}
+                  >
+                    <Text style={styles.tooltipMonth}>
+                      {hoveredLinePoint.month}
+                    </Text>
+                    <View style={styles.tooltipRow}>
+                      <View
+                        style={[
+                          styles.tooltipSwatch,
+                          { backgroundColor: hoveredLinePoint.color },
+                        ]}
+                      />
+                      <Text style={styles.tooltipText}>
+                        {hoveredLinePoint.label}:{" "}
+                        {formatBRLPrecise(hoveredLinePoint.value)}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
             ) : (
               <View style={styles.chartCardEmpty}>
                 <Text style={styles.chartCardEmptyText}>
