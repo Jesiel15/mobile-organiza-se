@@ -1,5 +1,5 @@
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "../context/AuthContext";
@@ -11,7 +11,7 @@ function InitialLayout() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isThemeLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
     const noSegments = !segments[0];
@@ -21,22 +21,7 @@ function InitialLayout() {
     } else if (token && (inAuthGroup || noSegments)) {
       router.replace("/(screens)/(home)/home");
     }
-  }, [token, isLoading, segments]);
-
-  if (isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: colors.backgroundHome,
-        }}
-      >
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
+  }, [token, isLoading, isThemeLoading, segments]);
 
   if (isLoading || isThemeLoading) {
     return (
@@ -52,8 +37,24 @@ function InitialLayout() {
       </View>
     );
   }
-  
-  return <Slot />;
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="(auth)"
+        options={{
+          animation: "fade",
+          animationDuration: 300,
+        }}
+      />
+      <Stack.Screen
+        name="(screens)"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
+    </Stack>
+  );
 }
 
 export default function RootLayout() {

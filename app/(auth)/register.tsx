@@ -12,6 +12,9 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import Animated, {
+  FadeInRight
+} from "react-native-reanimated";
 import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterScreen() {
@@ -31,11 +34,9 @@ export default function RegisterScreen() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const validatePassword = (pass: string) => {
-    // Extrai todas as letras e todos os números em arrays
     const letters = pass.match(/[a-zA-Z]/g) || [];
     const numbers = pass.match(/[0-9]/g) || [];
 
-    // Valida as quantidades mínimas exigidas
     return letters.length >= 4 && numbers.length >= 2;
   };
 
@@ -55,7 +56,6 @@ export default function RegisterScreen() {
       return;
     }
 
-    // Validação da regra da senha
     if (!validatePassword(senha)) {
       setErrorMessage("A senha deve ter no mínimo 4 letras e 2 números.");
       return;
@@ -72,7 +72,6 @@ export default function RegisterScreen() {
       });
     } catch (error: any) {
       const backendData = error.response?.data;
-      // Aqui o backend envia 'msg': 'A senha deve conter no mínimo 4 letras e 2 números.'
       const message =
         backendData?.msg || "Não foi possível realizar o cadastro.";
       setErrorMessage(message);
@@ -82,7 +81,10 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={[styles.container, isWide && styles.containerRow]}>
+    <Animated.View
+      entering={FadeInRight.duration(250)}
+      style={[styles.container, isWide && styles.containerRow]}
+    >
       {/* Painel ilustrativo */}
       <View style={[styles.illustrationPanel, isWide && styles.panelFlex]}>
         <Text style={styles.illustrationTitle}>Organiza-se</Text>
@@ -209,6 +211,6 @@ export default function RegisterScreen() {
           </View>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }

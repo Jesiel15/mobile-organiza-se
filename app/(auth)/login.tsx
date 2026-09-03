@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import Animated, { FadeInLeft } from "react-native-reanimated";
 import { useAuth } from "../../context/AuthContext";
 
 export default function LoginScreen() {
@@ -54,7 +55,10 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={[styles.container, isWide && styles.containerRow]}>
+    <Animated.View
+      entering={FadeInLeft.duration(250)}
+      style={[styles.container, isWide && styles.containerRow]}
+    >
       {/* Painel do formulário */}
       <View style={[styles.formPanel, isWide && styles.panelFlex]}>
         <View style={styles.formInner}>
@@ -139,7 +143,6 @@ export default function LoginScreen() {
       <View style={[styles.illustrationPanel, isWide && styles.panelFlex]}>
         <Text style={styles.illustrationTitle}>Organiza-se</Text>
         <View style={styles.iconBadge}>
-          {/* <FontAwesome5 name="dollar-sign" size={28} color="#3a6ea5" /> */}
           <Image
             source={require("../../assets/(images)/logo.png")}
             style={styles.logoImage}
@@ -147,6 +150,6 @@ export default function LoginScreen() {
           />
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
