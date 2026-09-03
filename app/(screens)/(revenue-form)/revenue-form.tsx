@@ -643,7 +643,7 @@ export default function FormRevenueScreen() {
                 numberOfLines={3}
                 placeholder="Observações adicionais..."
                 placeholderTextColor={colors.gray}
-                maxLength={255}
+                maxLength={500}
               />
             </View>
 

@@ -641,7 +641,7 @@ export default function FormExpenseScreen() {
                 numberOfLines={3}
                 placeholder="Observações adicionais..."
                 placeholderTextColor={colors.gray}
-                maxLength={255}
+                maxLength={500}
               />
             </View>
 
