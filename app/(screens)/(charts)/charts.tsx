@@ -37,6 +37,12 @@ const AXIS_LABEL_COLOR = "rgba(226,232,240,0.6)";
 const formatBRL = (value: number) =>
   `R$ ${Math.round(value).toLocaleString("pt-BR")}`;
 
+const formatBRLPrecise = (value: number) =>
+  value.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
 const formatAxisNumber = (value: number) =>
   Math.round(value).toLocaleString("pt-BR");
 
@@ -167,6 +173,16 @@ export default function ChartsScreen() {
   const [showExpenses, setShowExpenses] = useState(true);
   const [showIncomes, setShowIncomes] = useState(true);
   const [showTotal, setShowTotal] = useState(true);
+
+  // Tooltip do gráfico de barras: aparece no hover (web/desktop) ou no tap (touch)
+  const [hoveredBar, setHoveredBar] = useState<{
+    month: string;
+    label: string;
+    color: string;
+    value: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Dados vindos da API (buscados uma vez; a filtragem por ano é feita no client)
   const [rawExpenses, setRawExpenses] = useState<RawExpense[]>([]);
@@ -368,133 +384,218 @@ export default function ChartsScreen() {
     const valueToY = (v: number) =>
       paddingTop + usableHeight * ((maxVal - v) / valRange);
 
+    // Handlers de hover (mouse, web) e tap (touch) reaproveitados por barra.
+    // `onMouseEnter`/`onMouseLeave` são ignorados silenciosamente no nativo
+    // (iOS/Android) e funcionam normalmente no build web.
+    const getBarInteractionProps = (
+      month: string,
+      seriesLabel: string,
+      color: string,
+      value: number,
+      barX: number,
+      barY: number
+    ) =>
+      ({
+        onMouseEnter: () =>
+          setHoveredBar({
+            month,
+            label: seriesLabel,
+            color,
+            value,
+            x: barX,
+            y: barY,
+          }),
+        onMouseLeave: () => setHoveredBar(null),
+        onPress: () =>
+          setHoveredBar((prev) =>
+            prev && prev.x === barX && prev.y === barY
+              ? null
+              : { month, label: seriesLabel, color, value, x: barX, y: barY }
+          ),
+      } as any);
+
     return (
-      <Svg width={chartWidth} height={chartHeight}>
-        {/* Linhas de Grade + Rótulos do Eixo Y (escala dinâmica) */}
-        {axisTicks.map((tickVal, i) => {
-          const y = valueToY(tickVal);
-          return (
-            <React.Fragment key={i}>
-              <Line
-                x1={paddingLeft}
-                y1={y}
-                x2={chartWidth}
-                y2={y}
-                stroke={GRID_LINE_COLOR}
-                strokeDasharray="4"
-                strokeWidth="1"
+      <View style={{ position: "relative" }}>
+        <Svg width={chartWidth} height={chartHeight}>
+          {/* Linhas de Grade + Rótulos do Eixo Y (escala dinâmica) */}
+          {axisTicks.map((tickVal, i) => {
+            const y = valueToY(tickVal);
+            return (
+              <React.Fragment key={i}>
+                <Line
+                  x1={paddingLeft}
+                  y1={y}
+                  x2={chartWidth}
+                  y2={y}
+                  stroke={GRID_LINE_COLOR}
+                  strokeDasharray="4"
+                  strokeWidth="1"
+                />
+                <SvgText
+                  x={paddingLeft - 8}
+                  y={y + 4}
+                  fill={AXIS_LABEL_COLOR}
+                  fontSize="10"
+                  textAnchor="end"
+                >
+                  {formatAxisNumber(tickVal)}
+                </SvgText>
+              </React.Fragment>
+            );
+          })}
+
+          {/* Linha Zero */}
+          <Line
+            x1={paddingLeft}
+            y1={zeroY}
+            x2={chartWidth}
+            y2={zeroY}
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1"
+          />
+
+          {/* Render das Barras Agrupadas */}
+          {MONTHS_SHORT.map((label, monthIdx) => {
+            const groupStartX =
+              paddingLeft +
+              monthIdx * groupWidth +
+              (groupWidth - activeSeriesCount * barWidth) / 2;
+
+            let currentBarIndex = 0;
+
+            return (
+              <React.Fragment key={monthIdx}>
+                {/* Rótulo do Mês */}
+                <SvgText
+                  x={paddingLeft + monthIdx * groupWidth + groupWidth / 2}
+                  y={chartHeight - 8}
+                  fill={AXIS_LABEL_COLOR}
+                  fontSize="10"
+                  textAnchor="middle"
+                >
+                  {label}
+                </SvgText>
+
+                {/* Barra: Despesas */}
+                {showExpenses &&
+                  (() => {
+                    const val = monthlyExpenses[monthIdx];
+                    const barHeight = Math.abs((val / valRange) * usableHeight);
+                    const x = groupStartX + currentBarIndex * barWidth;
+                    const y = val >= 0 ? zeroY - barHeight : zeroY;
+                    currentBarIndex++;
+                    return (
+                      <Rect
+                        key={`exp-${monthIdx}`}
+                        x={x}
+                        y={y}
+                        width={barWidth - 1}
+                        height={Math.max(barHeight, 2)}
+                        fill="#e53e3e"
+                        rx={1.5}
+                        {...getBarInteractionProps(
+                          label,
+                          "Despesas Anuais (R$)",
+                          "#e53e3e",
+                          val,
+                          x,
+                          y
+                        )}
+                      />
+                    );
+                  })()}
+
+                {/* Barra: Receitas */}
+                {showIncomes &&
+                  (() => {
+                    const val = monthlyIncomes[monthIdx];
+                    const barHeight = Math.abs((val / valRange) * usableHeight);
+                    const x = groupStartX + currentBarIndex * barWidth;
+                    const y = val >= 0 ? zeroY - barHeight : zeroY;
+                    currentBarIndex++;
+                    return (
+                      <Rect
+                        key={`inc-${monthIdx}`}
+                        x={x}
+                        y={y}
+                        width={barWidth - 1}
+                        height={Math.max(barHeight, 2)}
+                        fill="#38a169"
+                        rx={1.5}
+                        {...getBarInteractionProps(
+                          label,
+                          "Receitas Anuais (R$)",
+                          "#38a169",
+                          val,
+                          x,
+                          y
+                        )}
+                      />
+                    );
+                  })()}
+
+                {/* Barra: Sobra/Falta */}
+                {showTotal &&
+                  (() => {
+                    const val = totals[monthIdx];
+                    const barHeight = Math.abs((val / valRange) * usableHeight);
+                    const x = groupStartX + currentBarIndex * barWidth;
+                    const y = val >= 0 ? zeroY - barHeight : zeroY;
+                    currentBarIndex++;
+                    return (
+                      <Rect
+                        key={`tot-${monthIdx}`}
+                        x={x}
+                        y={y}
+                        width={barWidth - 1}
+                        height={Math.max(barHeight, 2)}
+                        fill="#3182ce"
+                        rx={1.5}
+                        {...getBarInteractionProps(
+                          label,
+                          "Total sobra/falta (R$)",
+                          "#3182ce",
+                          val,
+                          x,
+                          y
+                        )}
+                      />
+                    );
+                  })()}
+              </React.Fragment>
+            );
+          })}
+        </Svg>
+
+        {hoveredBar && (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.tooltipContainer,
+              {
+                left: Math.min(
+                  Math.max(hoveredBar.x - 70, 4),
+                  chartWidth - 164
+                ),
+                top: Math.max(hoveredBar.y - 74, 4),
+              },
+            ]}
+          >
+            <Text style={styles.tooltipMonth}>{hoveredBar.month}</Text>
+            <View style={styles.tooltipRow}>
+              <View
+                style={[
+                  styles.tooltipSwatch,
+                  { backgroundColor: hoveredBar.color },
+                ]}
               />
-              <SvgText
-                x={paddingLeft - 8}
-                y={y + 4}
-                fill={AXIS_LABEL_COLOR}
-                fontSize="10"
-                textAnchor="end"
-              >
-                {formatAxisNumber(tickVal)}
-              </SvgText>
-            </React.Fragment>
-          );
-        })}
-
-        {/* Linha Zero */}
-        <Line
-          x1={paddingLeft}
-          y1={zeroY}
-          x2={chartWidth}
-          y2={zeroY}
-          stroke="rgba(255,255,255,0.2)"
-          strokeWidth="1"
-        />
-
-        {/* Render das Barras Agrupadas */}
-        {MONTHS_SHORT.map((label, monthIdx) => {
-          const groupStartX =
-            paddingLeft +
-            monthIdx * groupWidth +
-            (groupWidth - activeSeriesCount * barWidth) / 2;
-
-          let currentBarIndex = 0;
-
-          return (
-            <React.Fragment key={monthIdx}>
-              {/* Rótulo do Mês */}
-              <SvgText
-                x={paddingLeft + monthIdx * groupWidth + groupWidth / 2}
-                y={chartHeight - 8}
-                fill={AXIS_LABEL_COLOR}
-                fontSize="10"
-                textAnchor="middle"
-              >
-                {label}
-              </SvgText>
-
-              {/* Barra: Despesas */}
-              {showExpenses &&
-                (() => {
-                  const val = monthlyExpenses[monthIdx];
-                  const barHeight = Math.abs((val / valRange) * usableHeight);
-                  const x = groupStartX + currentBarIndex * barWidth;
-                  const y = val >= 0 ? zeroY - barHeight : zeroY;
-                  currentBarIndex++;
-                  return (
-                    <Rect
-                      key={`exp-${monthIdx}`}
-                      x={x}
-                      y={y}
-                      width={barWidth - 1}
-                      height={Math.max(barHeight, 2)}
-                      fill="#e53e3e"
-                      rx={1.5}
-                    />
-                  );
-                })()}
-
-              {/* Barra: Receitas */}
-              {showIncomes &&
-                (() => {
-                  const val = monthlyIncomes[monthIdx];
-                  const barHeight = Math.abs((val / valRange) * usableHeight);
-                  const x = groupStartX + currentBarIndex * barWidth;
-                  const y = val >= 0 ? zeroY - barHeight : zeroY;
-                  currentBarIndex++;
-                  return (
-                    <Rect
-                      key={`inc-${monthIdx}`}
-                      x={x}
-                      y={y}
-                      width={barWidth - 1}
-                      height={Math.max(barHeight, 2)}
-                      fill="#38a169"
-                      rx={1.5}
-                    />
-                  );
-                })()}
-
-              {/* Barra: Sobra/Falta */}
-              {showTotal &&
-                (() => {
-                  const val = totals[monthIdx];
-                  const barHeight = Math.abs((val / valRange) * usableHeight);
-                  const x = groupStartX + currentBarIndex * barWidth;
-                  const y = val >= 0 ? zeroY - barHeight : zeroY;
-                  currentBarIndex++;
-                  return (
-                    <Rect
-                      key={`tot-${monthIdx}`}
-                      x={x}
-                      y={y}
-                      width={barWidth - 1}
-                      height={Math.max(barHeight, 2)}
-                      fill="#3182ce"
-                      rx={1.5}
-                    />
-                  );
-                })()}
-            </React.Fragment>
-          );
-        })}
-      </Svg>
+              <Text style={styles.tooltipText}>
+                {hoveredBar.label}: {formatBRLPrecise(hoveredBar.value)}
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
     );
   };
 

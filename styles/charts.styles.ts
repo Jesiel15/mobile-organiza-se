@@ -190,4 +190,40 @@ export const getChartsStyles = (colors: ThemeColors, isMobile: boolean) =>
       fontSize: 13,
       color: MUTED_TEXT_FALLBACK,
     },
+
+    /* Tooltip do Gráfico de Barras (hover no web / tap no touch) */
+    tooltipContainer: {
+      position: "absolute",
+      minWidth: 160,
+      maxWidth: 220,
+      backgroundColor: "#1c2129",
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.35)",
+      elevation: 6,
+      zIndex: 10,
+    },
+    tooltipMonth: {
+      fontSize: 13,
+      fontWeight: "bold",
+      color: "#FFFFFF",
+      marginBottom: 6,
+    },
+    tooltipRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    tooltipSwatch: {
+      width: 10,
+      height: 10,
+      borderRadius: 2,
+      flexShrink: 0,
+    },
+    tooltipText: {
+      fontSize: 12,
+      color: "#FFFFFF",
+      flexShrink: 1,
+    },
   });
