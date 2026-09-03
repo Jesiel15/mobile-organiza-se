@@ -37,6 +37,54 @@ const AXIS_LABEL_COLOR = "rgba(226,232,240,0.6)";
 const formatBRL = (value: number) =>
   `R$ ${Math.round(value).toLocaleString("pt-BR")}`;
 
+const formatAxisNumber = (value: number) =>
+  Math.round(value).toLocaleString("pt-BR");
+
+/**
+ * "Nice numbers" para eixos de gráfico (algoritmo clássico de Paul Heckbert).
+ * Em vez de travar o eixo num valor fixo (ex: sempre até 12.000), calcula um
+ * teto/piso arredondado a partir do maior/menor valor real dos dados, para
+ * que o eixo sempre acompanhe o ano selecionado e continue com números
+ * "redondos" (múltiplos de 500/1000/2000/5000 etc.) em vez de valores feios.
+ */
+const niceNum = (range: number, round: boolean) => {
+  if (range === 0) return 0;
+  const exponent = Math.floor(Math.log10(range));
+  const fraction = range / Math.pow(10, exponent);
+  let niceFraction: number;
+
+  if (round) {
+    if (fraction < 1.5) niceFraction = 1;
+    else if (fraction < 3) niceFraction = 2;
+    else if (fraction < 7) niceFraction = 5;
+    else niceFraction = 10;
+  } else {
+    if (fraction <= 1) niceFraction = 1;
+    else if (fraction <= 2) niceFraction = 2;
+    else if (fraction <= 5) niceFraction = 5;
+    else niceFraction = 10;
+  }
+
+  return niceFraction * Math.pow(10, exponent);
+};
+
+const getNiceAxisBounds = (rawMin: number, rawMax: number, maxTicks = 6) => {
+  // Sempre inclui o zero no intervalo (linha de base do gráfico).
+  const min = Math.min(rawMin, 0);
+  const max = Math.max(rawMax, 0);
+
+  if (min === 0 && max === 0) {
+    return { min: 0, max: 1000, step: 200 };
+  }
+
+  const range = niceNum(max - min, false);
+  const step = niceNum(range / (maxTicks - 1), true);
+  const niceMin = Math.floor(min / step) * step;
+  const niceMax = Math.ceil(max / step) * step;
+
+  return { min: niceMin, max: niceMax, step };
+};
+
 type RawExpense = {
   id: number;
   valueExpense: number | string;
@@ -288,7 +336,7 @@ export default function ChartsScreen() {
       );
     }
 
-    const paddingLeft = 10;
+    const paddingLeft = 46;
     const paddingBottom = 30;
     const paddingTop = 20;
     const usableWidth = chartWidth - paddingLeft;
@@ -299,31 +347,53 @@ export default function ChartsScreen() {
       ...(showIncomes ? monthlyIncomes : []),
       ...(showTotal ? totals : []),
     ];
-    const maxVal = Math.max(...allValues, 12000);
-    const minVal = Math.min(...allValues, -2000);
+    const rawMax = allValues.length > 0 ? Math.max(...allValues) : 0;
+    const rawMin = allValues.length > 0 ? Math.min(...allValues) : 0;
+    const {
+      min: minVal,
+      max: maxVal,
+      step,
+    } = getNiceAxisBounds(rawMin, rawMax);
     const valRange = maxVal - minVal;
+
+    const axisTicks: number[] = [];
+    for (let v = minVal; v <= maxVal + step / 2; v += step) {
+      axisTicks.push(Math.round(v));
+    }
 
     const groupWidth = usableWidth / 12;
     const barWidth = Math.min(groupWidth / (activeSeriesCount + 1), 10);
 
     const zeroY = paddingTop + usableHeight * (maxVal / valRange);
+    const valueToY = (v: number) =>
+      paddingTop + usableHeight * ((maxVal - v) / valRange);
 
     return (
       <Svg width={chartWidth} height={chartHeight}>
-        {/* Linhas de Grade de Fundo */}
-        {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
-          const y = paddingTop + usableHeight * ratio;
+        {/* Linhas de Grade + Rótulos do Eixo Y (escala dinâmica) */}
+        {axisTicks.map((tickVal, i) => {
+          const y = valueToY(tickVal);
           return (
-            <Line
-              key={i}
-              x1={paddingLeft}
-              y1={y}
-              x2={chartWidth}
-              y2={y}
-              stroke={GRID_LINE_COLOR}
-              strokeDasharray="4"
-              strokeWidth="1"
-            />
+            <React.Fragment key={i}>
+              <Line
+                x1={paddingLeft}
+                y1={y}
+                x2={chartWidth}
+                y2={y}
+                stroke={GRID_LINE_COLOR}
+                strokeDasharray="4"
+                strokeWidth="1"
+              />
+              <SvgText
+                x={paddingLeft - 8}
+                y={y + 4}
+                fill={AXIS_LABEL_COLOR}
+                fontSize="10"
+                textAnchor="end"
+              >
+                {formatAxisNumber(tickVal)}
+              </SvgText>
+            </React.Fragment>
           );
         })}
 
