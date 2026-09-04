@@ -658,26 +658,11 @@ export default function ChartsScreen() {
       >
         <Text style={styles.title}>📊 Gráfico de Despesas e Receitas</Text>
 
-        {isLoadingData && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 16,
-            }}
-          >
-            <ActivityIndicator color={colors.primary} />
-            <Text style={styles.label}>Carregando dados...</Text>
-          </View>
-        )}
-
         {loadError && !isLoadingData && (
           <Text style={[styles.label, { color: "#e53e3e", marginBottom: 16 }]}>
             {loadError}
           </Text>
         )}
-
         {/* Input de Ano */}
         <View style={styles.filterContainer}>
           <Text style={styles.label}>Filtrar por Ano</Text>
@@ -772,7 +757,6 @@ export default function ChartsScreen() {
             </View>
           )}
         </View>
-
         {/* Chips Legenda / Controles */}
         <View style={styles.legendContainer}>
           <TouchableOpacity
@@ -814,139 +798,158 @@ export default function ChartsScreen() {
             <Text style={styles.legendText}>Total sobra/falta (R$)</Text>
           </TouchableOpacity>
         </View>
-
         {/* Grid dos Gráficos Lado a Lado */}
-        <View style={styles.chartsGrid}>
-          {/* Gráfico 1: Barras Agrupadas SVG */}
-          <View
-            style={[styles.chartCard, { width: isMobile ? "100%" : cardWidth }]}
-          >
-            <Text style={styles.chartCardTitle}>Visão em Barras</Text>
-            {renderGroupedBarChart()}
-          </View>
+        {!isLoadingData ? (
+          <View style={styles.chartsGrid}>
+            {/* Gráfico 1: Barras Agrupadas SVG */}
+            <View
+              style={[
+                styles.chartCard,
+                { width: isMobile ? "100%" : cardWidth },
+              ]}
+            >
+              <Text style={styles.chartCardTitle}>Visão em Barras</Text>
+              {renderGroupedBarChart()}
+            </View>
 
-          {/* Gráfico 2: Linhas */}
-          <View
-            style={[styles.chartCard, { width: isMobile ? "100%" : cardWidth }]}
-          >
-            <Text style={styles.chartCardTitle}>Visão em Linhas</Text>
-            {activeDatasetsLine.length > 0 ? (
-              <View style={{ position: "relative" }}>
-                <LineChart
-                  data={lineChartData}
-                  width={chartWidth}
-                  height={chartHeight}
-                  chartConfig={baseChartConfig}
-                  style={styles.chartStyle}
-                  withInnerLines
-                  withOuterLines={false}
-                  bezier={false}
-                  fromZero
-                  renderDotContent={({ x, y, index, indexData }) => {
-                    const matchedDataset = activeDatasetsLine.find(
-                      (ds) => ds.data[index] === indexData
-                    );
+            {/* Gráfico 2: Linhas */}
+            <View
+              style={[
+                styles.chartCard,
+                { width: isMobile ? "100%" : cardWidth },
+              ]}
+            >
+              <Text style={styles.chartCardTitle}>Visão em Linhas</Text>
+              {activeDatasetsLine.length > 0 ? (
+                <View style={{ position: "relative" }}>
+                  <LineChart
+                    data={lineChartData}
+                    width={chartWidth}
+                    height={chartHeight}
+                    chartConfig={baseChartConfig}
+                    style={styles.chartStyle}
+                    withInnerLines
+                    withOuterLines={false}
+                    bezier={false}
+                    fromZero
+                    renderDotContent={({ x, y, index, indexData }) => {
+                      const matchedDataset = activeDatasetsLine.find(
+                        (ds) => ds.data[index] === indexData
+                      );
 
-                    if (!matchedDataset) return null;
+                      if (!matchedDataset) return null;
 
-                    const dotColor = matchedDataset.color(1);
+                      const dotColor = matchedDataset.color(1);
 
-                    return (
-                      <React.Fragment
-                        key={`dot-group-${matchedDataset.datasetKey}-${index}`}
-                      >
-                        {/* Ponto Visível */}
-                        <Circle
-                          cx={x}
-                          cy={y}
-                          r={5}
-                          fill={dotColor}
-                          stroke={cardBg}
-                          strokeWidth={2}
-                        />
+                      return (
+                        <React.Fragment
+                          key={`dot-group-${matchedDataset.datasetKey}-${index}`}
+                        >
+                          {/* Ponto Visível */}
+                          <Circle
+                            cx={x}
+                            cy={y}
+                            r={5}
+                            fill={dotColor}
+                            stroke={cardBg}
+                            strokeWidth={2}
+                          />
 
-                        {/* Hitbox Invisível (Área de toque expandida para mobile e web) */}
-                        <Circle
-                          cx={x}
-                          cy={y}
-                          r={22}
-                          fill="transparent"
-                          onPress={() =>
-                            handlePointSelect(
-                              index,
-                              indexData,
-                              matchedDataset.datasetKey,
-                              x,
-                              y
-                            )
-                          }
-                          {...({
-                            onClick: () =>
+                          {/* Hitbox Invisível (Área de toque expandida para mobile e web) */}
+                          <Circle
+                            cx={x}
+                            cy={y}
+                            r={22}
+                            fill="transparent"
+                            onPress={() =>
                               handlePointSelect(
                                 index,
                                 indexData,
                                 matchedDataset.datasetKey,
                                 x,
                                 y
-                              ),
-                            onMouseEnter: () =>
-                              handlePointSelect(
-                                index,
-                                indexData,
-                                matchedDataset.datasetKey,
-                                x,
-                                y
-                              ),
-                            onMouseLeave: () => setHoveredLinePoint(null),
-                            cursor: "pointer",
-                          } as any)}
-                        />
-                      </React.Fragment>
-                    );
-                  }}
-                />
+                              )
+                            }
+                            {...({
+                              onClick: () =>
+                                handlePointSelect(
+                                  index,
+                                  indexData,
+                                  matchedDataset.datasetKey,
+                                  x,
+                                  y
+                                ),
+                              onMouseEnter: () =>
+                                handlePointSelect(
+                                  index,
+                                  indexData,
+                                  matchedDataset.datasetKey,
+                                  x,
+                                  y
+                                ),
+                              onMouseLeave: () => setHoveredLinePoint(null),
+                              cursor: "pointer",
+                            } as any)}
+                          />
+                        </React.Fragment>
+                      );
+                    }}
+                  />
 
-                {hoveredLinePoint && (
-                  <View
-                    pointerEvents="none"
-                    style={[
-                      styles.tooltipContainer,
-                      {
-                        left: Math.min(
-                          Math.max(hoveredLinePoint.x - 70, 4),
-                          chartWidth - 164
-                        ),
-                        top: Math.max(hoveredLinePoint.y - 65, 4),
-                      },
-                    ]}
-                  >
-                    <Text style={styles.tooltipMonth}>
-                      {hoveredLinePoint.month}
-                    </Text>
-                    <View style={styles.tooltipRow}>
-                      <View
-                        style={[
-                          styles.tooltipSwatch,
-                          { backgroundColor: hoveredLinePoint.color },
-                        ]}
-                      />
-                      <Text style={styles.tooltipText}>
-                        {hoveredLinePoint.label}:{" "}
-                        {formatBRLPrecise(hoveredLinePoint.value)}
+                  {hoveredLinePoint && (
+                    <View
+                      pointerEvents="none"
+                      style={[
+                        styles.tooltipContainer,
+                        {
+                          left: Math.min(
+                            Math.max(hoveredLinePoint.x - 70, 4),
+                            chartWidth - 164
+                          ),
+                          top: Math.max(hoveredLinePoint.y - 65, 4),
+                        },
+                      ]}
+                    >
+                      <Text style={styles.tooltipMonth}>
+                        {hoveredLinePoint.month}
                       </Text>
+                      <View style={styles.tooltipRow}>
+                        <View
+                          style={[
+                            styles.tooltipSwatch,
+                            { backgroundColor: hoveredLinePoint.color },
+                          ]}
+                        />
+                        <Text style={styles.tooltipText}>
+                          {hoveredLinePoint.label}:{" "}
+                          {formatBRLPrecise(hoveredLinePoint.value)}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View style={styles.chartCardEmpty}>
-                <Text style={styles.chartCardEmptyText}>
-                  Selecione ao menos um dado acima.
-                </Text>
-              </View>
-            )}
+                  )}
+                </View>
+              ) : (
+                <View style={styles.chartCardEmpty}>
+                  <Text style={styles.chartCardEmptyText}>
+                    Selecione ao menos um dado acima.
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        ) : (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
+            <ActivityIndicator color={colors.primary} />
+            <Text style={styles.label}>Carregando dados...</Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
