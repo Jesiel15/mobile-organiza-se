@@ -336,10 +336,17 @@ export default function CalendarScreen() {
           </View>
 
           {isLoading ? (
-            <ActivityIndicator
-              color={colors?.primary || "#3182CE"}
-              style={styles.loader}
-            />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 16,
+              }}
+            >
+              <ActivityIndicator color={colors.primary} />
+              <Text style={styles.label}>Carregando dados...</Text>
+            </View>
           ) : (
             <View style={styles.calendarCard}>
               <View style={styles.calendarHeaderControls}>

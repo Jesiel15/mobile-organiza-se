@@ -257,6 +257,12 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
     loader: {
       marginVertical: 20,
     },
+    label: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textColor,
+      marginBottom: 6,
+    },
   });
 
 export default getCalendarStyles;
