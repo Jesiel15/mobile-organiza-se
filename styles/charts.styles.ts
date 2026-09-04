@@ -14,9 +14,11 @@ export const getChartsStyles = (colors: ThemeColors, isMobile: boolean) =>
       flex: 1,
     },
     content: {
-      padding: isMobile ? 16 : 32,
-      paddingBottom: isMobile ? 90 : 32,
-      paddingTop: isMobile ? 64 : 32,
+      // padding: isMobile ? 16 : 44,
+      paddingLeft: isMobile ? 12 : 44,
+      paddingRight: isMobile ? 12 : 44,
+      paddingBottom: isMobile ? 90 : 44,
+      paddingTop: isMobile ? 64 : 44,
     },
     title: {
       fontSize: 24,

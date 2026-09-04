@@ -10,22 +10,23 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
     },
     content: {
       flex: 1,
-      padding: isMobile ? 16 : 32,
-      paddingTop: isMobile ? 64 : 32,
-      paddingBottom: isMobile ? 90 : 32,
+      // padding: isMobile ? 16 : 32,
+
+      paddingLeft: isMobile ? 12 : 44,
+      paddingRight: isMobile ? 12 : 44,
+      paddingBottom: isMobile ? 90 : 44,
+      paddingTop: isMobile ? 64 : 44,
     },
     title: {
       fontSize: 24,
       fontWeight: "bold",
       color: colors.textColor,
       marginBottom: 10,
-      marginLeft: isMobile ? 0 : 26,
     },
     subtitle: {
       fontSize: 14,
       color: colors.gray,
       marginBottom: 24,
-      marginLeft: isMobile ? 0 : 26,
     },
 
     // ---------- Seletor de tema ----------
@@ -35,14 +36,12 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
       color: colors.textColor,
       marginBottom: 12,
       marginTop: 12,
-      marginLeft: isMobile ? 0 : 26,
     },
     themeOptions: {
       flexDirection: "row",
       flexWrap: "wrap",
       gap: 12,
       marginBottom: 24,
-      marginLeft: isMobile ? 0 : 26,
     },
     themeOption: {
       flexDirection: "row",
@@ -82,7 +81,6 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
       flexDirection: "row",
       alignItems: "center",
       marginBottom: 16,
-      marginLeft: isMobile ? 0 : 26,
       maxWidth: 900,
     },
     input: {
@@ -117,13 +115,11 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
       flexDirection: isMobile ? "column" : "row",
       gap: 12,
       marginTop: 8,
-      marginLeft: isMobile ? 0 : 26,
       maxWidth: 900,
     },
     logoutButton: {
       paddingVertical: 14,
       paddingHorizontal: 24,
-      marginLeft: isMobile ? 0 : 26,
       marginBottom: 36,
       borderRadius: 6,
       minWidth: 160,

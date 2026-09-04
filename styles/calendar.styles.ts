@@ -20,15 +20,17 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
     },
     content: {
       flexGrow: 1,
-      padding: isMobile ? 12 : 24,
-      paddingBottom: isMobile ? 120 : 32,
-      paddingTop: isMobile ? 64 : 24,
+      // padding: isMobile ? 12 : 24,
+      paddingRight: isMobile ? 12 : 44,
+      paddingLeft: isMobile ? 12 : 44,
+      paddingBottom: isMobile ? 120 : 44,
+      paddingTop: isMobile ? 64 : 44,
     },
     title: {
       fontSize: 24,
       fontWeight: "700",
       color: colors?.textColor || "#FFFFFF",
-      marginBottom: 16,
+      marginBottom: 24,
     },
 
     // --- FILTRO DE MÊS/ANO ---
