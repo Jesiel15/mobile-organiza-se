@@ -125,7 +125,7 @@ export default function SettingsScreen() {
       <Sidebar activeScreen="Configurações" />
 
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>Configurações</Text>
+        <Text style={styles.title}>⚙ Configurações</Text>
         <Text style={styles.subtitle}>
           Gerencie suas preferências de conta e aplicativo
         </Text>

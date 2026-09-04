@@ -656,7 +656,7 @@ export default function ChartsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-        <Text style={styles.title}>Gráfico de Despesas e Receitas</Text>
+        <Text style={styles.title}>📊 Gráfico de Despesas e Receitas</Text>
 
         {isLoadingData && (
           <View

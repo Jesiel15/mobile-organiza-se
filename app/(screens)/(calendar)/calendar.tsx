@@ -251,7 +251,7 @@ export default function CalendarScreen() {
           style={styles.scrollView}
           contentContainerStyle={styles.content}
         >
-          <Text style={styles.title}>Calendário 📅</Text>
+          <Text style={styles.title}>📅 Calendário</Text>
 
           <View style={styles.filterContainer}>
             <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
