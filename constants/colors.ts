@@ -145,7 +145,7 @@ export const blueColors: ThemeColors = {
   modalColor: "#e0f2fe",
   outLineInputDate: "#242424",
   buttonLogoutConfig: "#FF7F00",
-  calendarBackgroundIcon: "#285f9e",
+  calendarBackgroundIcon: "#FF7F00",
 
   // Brand colours
   red: "#e0533d",

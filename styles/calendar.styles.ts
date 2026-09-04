@@ -42,6 +42,7 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
       fontSize: 16,
       fontWeight: "600",
       color: colors?.textColor || "#FFFFFF",
+
       marginBottom: 8,
     },
     customPickerTrigger: {
@@ -53,7 +54,7 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
       paddingLeft: 14,
       paddingRight: 0,
       height: 44,
-      width: isMobile ? "100%" : 220,
+      width: isMobile ? "100%" : 300,
       overflow: "hidden",
       boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
     },
@@ -63,7 +64,7 @@ export const getCalendarStyles = (colors: ThemeColors, isMobile: boolean) =>
       color: colors?.textColor || "#FFFFFF",
     },
     iconContainer: {
-      backgroundColor: colors?.primary || "#3182CE",
+      backgroundColor: colors?.calendarBackgroundIcon || "#3182CE",
       height: "100%",
       width: 44,
       alignItems: "center",
