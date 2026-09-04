@@ -488,6 +488,7 @@ export default function TransactionsList({
         <SummaryCards
           totalExpenses={totalExpenses}
           totalRevenues={totalRevenues}
+          isLoading={isLoading}
         />
         {isLoading ? (
           <ActivityIndicator
