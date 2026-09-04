@@ -123,8 +123,11 @@ export const getSettingsStyles = (colors: ThemeColors, isMobile: boolean) =>
     logoutButton: {
       paddingVertical: 14,
       paddingHorizontal: 24,
+      marginLeft: isMobile ? 0 : 26,
+      marginBottom: 36,
       borderRadius: 6,
       minWidth: 160,
+      maxWidth: 200,
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: colors.buttonLogoutConfig,
