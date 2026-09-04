@@ -489,323 +489,330 @@ export default function TransactionsList({
           totalExpenses={totalExpenses}
           totalRevenues={totalRevenues}
         />
-
-        {isLoading && (
+        {isLoading ? (
           <ActivityIndicator
             size="large"
             color={colors.primary}
             style={styles.loader}
           />
-        )}
+        ) : (
+          <View style={styles.filterContainer}>
+            <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
 
-        <View style={styles.filterContainer}>
-          <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>
-
-          <TouchableOpacity
-            style={styles.customPickerTrigger}
-            activeOpacity={0.7}
-            onPress={() => setShowMonthPicker((prev) => !prev)}
-          >
-            <Text style={styles.customPickerText}>
-              {/* Caso queira deixa Agosto De 2026  no filtro colocar  month: "long"*/}
-              {monthYearFilter.toLocaleDateString("pt-BR", {
-                month: "numeric",
-                year: "numeric",
-              })}
-            </Text>
-
-            <View style={styles.iconContainer}>
-              <Ionicons
-                name="calendar-outline"
-                size={20}
-                color={colors.black}
-              />
-            </View>
-          </TouchableOpacity>
-
-          {showMonthPicker && (
-            <View style={styles.popoverCard}>
-              <View style={styles.popoverHeader}>
-                <TouchableOpacity
-                  onPress={() => handleYearChange(-1)}
-                  style={styles.arrowButton}
-                >
-                  <Ionicons name="chevron-back" size={18} color={colors.gray} />
-                </TouchableOpacity>
-                <Text style={styles.popoverYearText}>
-                  {currentSelectedYear}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => handleYearChange(1)}
-                  style={styles.arrowButton}
-                >
-                  <Ionicons
-                    name="chevron-forward"
-                    size={18}
-                    color={colors.gray}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.monthsGrid}>
-                {MONTHS_LIST.map((monthName, index) => {
-                  const isSelected = index === currentSelectedMonth;
-                  return (
-                    <TouchableOpacity
-                      key={monthName}
-                      style={[
-                        styles.monthGridItem,
-                        isSelected && styles.monthGridItemSelected,
-                      ]}
-                      onPress={() => handleSelectMonth(index)}
-                    >
-                      <Text
-                        style={[
-                          styles.monthGridText,
-                          isSelected && styles.monthGridTextSelected,
-                        ]}
-                      >
-                        {monthName}
-                      </Text>
-                    </TouchableOpacity>
-                  );
+            <TouchableOpacity
+              style={styles.customPickerTrigger}
+              activeOpacity={0.7}
+              onPress={() => setShowMonthPicker((prev) => !prev)}
+            >
+              <Text style={styles.customPickerText}>
+                {/* Caso queira deixa Agosto De 2026  no filtro colocar  month: "long"*/}
+                {monthYearFilter.toLocaleDateString("pt-BR", {
+                  month: "numeric",
+                  year: "numeric",
                 })}
+              </Text>
+
+              <View style={styles.iconContainer}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={20}
+                  color={colors.black}
+                />
               </View>
+            </TouchableOpacity>
 
-              <View style={styles.popoverFooter}>
-                <TouchableOpacity onPress={handleSetCurrentMonth}>
-                  <Text style={styles.footerActionText}>Este mês</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </View>
+            {showMonthPicker && (
+              <View style={styles.popoverCard}>
+                <View style={styles.popoverHeader}>
+                  <TouchableOpacity
+                    onPress={() => handleYearChange(-1)}
+                    style={styles.arrowButton}
+                  >
+                    <Ionicons
+                      name="chevron-back"
+                      size={18}
+                      color={colors.gray}
+                    />
+                  </TouchableOpacity>
+                  <Text style={styles.popoverYearText}>
+                    {currentSelectedYear}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleYearChange(1)}
+                    style={styles.arrowButton}
+                  >
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color={colors.gray}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-        <View style={styles.listsWrapper}>
-          {/* Bloco de Despesas */}
-          <View style={styles.columnContainer}>
-            <Text style={styles.sectionTitle}>Despesas</Text>
-
-            <View style={styles.cardSection}>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => {
-                  saveFilterState();
-                  onNavigateToAddExpense?.();
-                }}
-              >
-                <Text style={styles.addButtonText}>Adicionar despesa</Text>
-              </TouchableOpacity>
-
-              <FlatList
-                data={expenses}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-                renderItem={({ item }) => (
-                  <View style={styles.itemRow}>
-                    {/* Checkbox */}
-                    <TouchableOpacity
-                      onPress={() => toggleExpensePaidStatus(item)}
-                      activeOpacity={0.7}
-                    >
-                      <View
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 6,
-                          borderWidth: 1.5,
-                          borderColor: colors.checkmarkOut,
-                          backgroundColor: item.isPaid
-                            ? colors.checkmarkOut
-                            : "transparent",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        {item.isPaid && (
-                          <Ionicons
-                            name="checkmark"
-                            size={16}
-                            color={colors.checkmark}
-                          />
-                        )}
-                      </View>
-                    </TouchableOpacity>
-
-                    {/* Ícone */}
-                    <View
-                      style={[
-                        styles.iconBox,
-                        { backgroundColor: item.color || colors.primary },
-                      ]}
-                    >
-                      <Ionicons
-                        name={getValidIconName(item.icon, "barcode-outline")}
-                        size={28}
-                        color="#fff"
-                      />
-                    </View>
-
-                    {/* Detalhes (Nome, Data e Valor juntos) */}
-                    <View style={styles.itemDetails}>
-                      <Text
+                <View style={styles.monthsGrid}>
+                  {MONTHS_LIST.map((monthName, index) => {
+                    const isSelected = index === currentSelectedMonth;
+                    return (
+                      <TouchableOpacity
+                        key={monthName}
                         style={[
-                          styles.itemName,
-                          item.isPaid && styles.paidText,
+                          styles.monthGridItem,
+                          isSelected && styles.monthGridItemSelected,
                         ]}
-                        numberOfLines={1}
+                        onPress={() => handleSelectMonth(index)}
                       >
-                        {item.nameExpense}
-                      </Text>
-
-                      <View style={styles.dateAndAmountRow}>
-                        <Text style={styles.itemDate}>
-                          {formatDate(item.dateExpense)}
-                        </Text>
                         <Text
                           style={[
-                            styles.itemAmount,
-                            item.isPaid && styles.paidText,
+                            styles.monthGridText,
+                            isSelected && styles.monthGridTextSelected,
                           ]}
                         >
-                          {formatCurrency(item.valueExpense)}
+                          {monthName}
                         </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                <View style={styles.popoverFooter}>
+                  <TouchableOpacity onPress={handleSetCurrentMonth}>
+                    <Text style={styles.footerActionText}>Este mês</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
+        {isLoading ? (
+          <></>
+        ) : (
+          <View style={styles.listsWrapper}>
+            {/* Bloco de Despesas */}
+            <View style={styles.columnContainer}>
+              <Text style={styles.sectionTitle}>Despesas</Text>
+
+              <View style={styles.cardSection}>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => {
+                    saveFilterState();
+                    onNavigateToAddExpense?.();
+                  }}
+                >
+                  <Text style={styles.addButtonText}>Adicionar despesa</Text>
+                </TouchableOpacity>
+
+                <FlatList
+                  data={expenses}
+                  keyExtractor={(item) => item.id}
+                  scrollEnabled={false}
+                  renderItem={({ item }) => (
+                    <View style={styles.itemRow}>
+                      {/* Checkbox */}
+                      <TouchableOpacity
+                        onPress={() => toggleExpensePaidStatus(item)}
+                        activeOpacity={0.7}
+                      >
+                        <View
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 6,
+                            borderWidth: 1.5,
+                            borderColor: colors.checkmarkOut,
+                            backgroundColor: item.isPaid
+                              ? colors.checkmarkOut
+                              : "transparent",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          {item.isPaid && (
+                            <Ionicons
+                              name="checkmark"
+                              size={16}
+                              color={colors.checkmark}
+                            />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+
+                      {/* Ícone */}
+                      <View
+                        style={[
+                          styles.iconBox,
+                          { backgroundColor: item.color || colors.primary },
+                        ]}
+                      >
+                        <Ionicons
+                          name={getValidIconName(item.icon, "barcode-outline")}
+                          size={28}
+                          color="#fff"
+                        />
+                      </View>
+
+                      {/* Detalhes (Nome, Data e Valor juntos) */}
+                      <View style={styles.itemDetails}>
+                        <Text
+                          style={[
+                            styles.itemName,
+                            item.isPaid && styles.paidText,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {item.nameExpense}
+                        </Text>
+
+                        <View style={styles.dateAndAmountRow}>
+                          <Text style={styles.itemDate}>
+                            {formatDate(item.dateExpense)}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.itemAmount,
+                              item.isPaid && styles.paidText,
+                            ]}
+                          >
+                            {formatCurrency(item.valueExpense)}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Ações (Editar, Deletar, Replicar) */}
+                      <View style={styles.actionsRow}>
+                        <TouchableOpacity
+                          onPress={() => handleEditExpense(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons
+                            name="create-outline"
+                            size={22}
+                            color={colors.neonGreen}
+                          />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => confirmDeleteExpense(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons
+                            name="remove-circle-outline"
+                            size={22}
+                            color={colors.red}
+                          />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => confirmReplicateExpense(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons
+                            name="arrow-forward-outline"
+                            size={22}
+                            color={colors.blue}
+                          />
+                        </TouchableOpacity>
                       </View>
                     </View>
-
-                    {/* Ações (Editar, Deletar, Replicar) */}
-                    <View style={styles.actionsRow}>
-                      <TouchableOpacity
-                        onPress={() => handleEditExpense(item)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Ionicons
-                          name="create-outline"
-                          size={22}
-                          color={colors.neonGreen}
-                        />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={() => confirmDeleteExpense(item)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Ionicons
-                          name="remove-circle-outline"
-                          size={22}
-                          color={colors.red}
-                        />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={() => confirmReplicateExpense(item)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Ionicons
-                          name="arrow-forward-outline"
-                          size={22}
-                          color={colors.blue}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-              />
+                  )}
+                />
+              </View>
             </View>
-          </View>
 
-          {/* Bloco de Receitas */}
-          <View style={styles.columnContainer}>
-            <Text style={styles.sectionTitle}>Receitas/Salários</Text>
+            {/* Bloco de Receitas */}
+            <View style={styles.columnContainer}>
+              <Text style={styles.sectionTitle}>Receitas/Salários</Text>
 
-            <View style={styles.cardSection}>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => {
-                  saveFilterState();
-                  onNavigateToAddRevenue?.();
-                }}
-              >
-                <Text style={styles.addButtonText}>Adicionar receita</Text>
-              </TouchableOpacity>
+              <View style={styles.cardSection}>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => {
+                    saveFilterState();
+                    onNavigateToAddRevenue?.();
+                  }}
+                >
+                  <Text style={styles.addButtonText}>Adicionar receita</Text>
+                </TouchableOpacity>
 
-              <FlatList
-                data={revenues}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-                renderItem={({ item }) => (
-                  <View style={styles.itemRow}>
-                    {/* Ícone */}
-                    <View
-                      style={[
-                        styles.iconBox,
-                        { backgroundColor: item.color || "#D92D20" },
-                      ]}
-                    >
-                      <Ionicons
-                        name={getValidIconName(item.icon, "cash-outline")}
-                        size={16}
-                        color="#fff"
-                      />
-                    </View>
+                <FlatList
+                  data={revenues}
+                  keyExtractor={(item) => item.id}
+                  scrollEnabled={false}
+                  renderItem={({ item }) => (
+                    <View style={styles.itemRow}>
+                      {/* Ícone */}
+                      <View
+                        style={[
+                          styles.iconBox,
+                          { backgroundColor: item.color || "#D92D20" },
+                        ]}
+                      >
+                        <Ionicons
+                          name={getValidIconName(item.icon, "cash-outline")}
+                          size={16}
+                          color="#fff"
+                        />
+                      </View>
 
-                    {/* Detalhes (Nome, Data e Valor juntos) */}
-                    <View style={styles.itemDetails}>
-                      <Text style={styles.itemName} numberOfLines={1}>
-                        {item.nameRevenue}
-                      </Text>
-
-                      <View style={styles.dateAndAmountRow}>
-                        <Text style={styles.itemDate}>
-                          {formatDate(item.dateRevenue)}
+                      {/* Detalhes (Nome, Data e Valor juntos) */}
+                      <View style={styles.itemDetails}>
+                        <Text style={styles.itemName} numberOfLines={1}>
+                          {item.nameRevenue}
                         </Text>
-                        <Text style={styles.itemAmount}>
-                          {formatCurrency(item.valueRevenue)}
-                        </Text>
+
+                        <View style={styles.dateAndAmountRow}>
+                          <Text style={styles.itemDate}>
+                            {formatDate(item.dateRevenue)}
+                          </Text>
+                          <Text style={styles.itemAmount}>
+                            {formatCurrency(item.valueRevenue)}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Ações (Editar, Deletar, Replicar) */}
+                      <View style={styles.actionsRow}>
+                        <TouchableOpacity
+                          onPress={() => handleEditRevenue(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons
+                            name="create-outline"
+                            size={22}
+                            color={colors.neonGreen}
+                          />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => confirmDeleteRevenue(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons
+                            name="remove-circle-outline"
+                            size={22}
+                            color={colors.red}
+                          />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => confirmReplicateRevenue(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons
+                            name="arrow-forward-outline"
+                            size={22}
+                            color={colors.blue}
+                          />
+                        </TouchableOpacity>
                       </View>
                     </View>
-
-                    {/* Ações (Editar, Deletar, Replicar) */}
-                    <View style={styles.actionsRow}>
-                      <TouchableOpacity
-                        onPress={() => handleEditRevenue(item)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Ionicons
-                          name="create-outline"
-                          size={22}
-                          color={colors.neonGreen}
-                        />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={() => confirmDeleteRevenue(item)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Ionicons
-                          name="remove-circle-outline"
-                          size={22}
-                          color={colors.red}
-                        />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={() => confirmReplicateRevenue(item)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Ionicons
-                          name="arrow-forward-outline"
-                          size={22}
-                          color={colors.blue}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-              />
+                  )}
+                />
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </ScrollView>
 
       {/* Modal Genérico de Confirmação para Web e Mobile */}
