@@ -153,7 +153,10 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
 
             <View style={styles.footer}>
               <View style={styles.divider} />
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => handleNavigate("support")}
+              >
                 <Ionicons name="call-outline" size={20} color={colors.white} />
                 <Text style={styles.menuText}>Suporte</Text>
               </TouchableOpacity>
