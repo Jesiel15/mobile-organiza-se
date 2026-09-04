@@ -11,6 +11,8 @@ export interface ThemeColors {
   modalColor: string;
   outLineInputDate: string;
   buttonLogoutConfig: string;
+  calendarBackgroundIcon: string;
+
   // Brand colours
   red: string;
   redSuave: string;
@@ -54,6 +56,8 @@ export const lightColors: ThemeColors = {
   modalColor: "#ffffff",
   outLineInputDate: "#242424",
   buttonLogoutConfig: "#FF7F00",
+  calendarBackgroundIcon: "#2881e4",
+
   red: "#e0533d",
   redSuave: "#fecaca",
   purple: "#9da7d0",
@@ -96,6 +100,8 @@ export const darkColors: ThemeColors = {
   modalColor: "#404040",
   outLineInputDate: "#ffffff",
   buttonLogoutConfig: "#FF7F00",
+  calendarBackgroundIcon: "#2881e4",
+
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
@@ -139,13 +145,14 @@ export const blueColors: ThemeColors = {
   modalColor: "#e0f2fe",
   outLineInputDate: "#242424",
   buttonLogoutConfig: "#FF7F00",
+  calendarBackgroundIcon: "#285f9e",
 
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
   purple: "#9da7d0",
   green: "#469b88",
-  blue: "#377cc8",
+  blue: "#285f9e",
   pink: "#e78c9d",
   lilac: "#d9d8f7",
   neonGreen: "#16df7f",

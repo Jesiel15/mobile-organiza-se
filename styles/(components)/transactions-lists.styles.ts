@@ -49,7 +49,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       ],
     },
     iconContainer: {
-      backgroundColor: colors?.blue,
+      backgroundColor: colors?.calendarBackgroundIcon,
       height: "100%", // Preenche toda a altura (48px) do container
       width: 48, // Cria um quadrado perfeito do lado direito
       alignItems: "center",
