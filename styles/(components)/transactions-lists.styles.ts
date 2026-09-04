@@ -49,7 +49,7 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       ],
     },
     iconContainer: {
-      backgroundColor: isMobile ? colors?.white : colors?.background,
+      backgroundColor: colors?.blue,
       height: "100%", // Preenche toda a altura (48px) do container
       width: 48, // Cria um quadrado perfeito do lado direito
       alignItems: "center",
@@ -61,7 +61,6 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       color: colors?.textColor || "#344054",
       textTransform: "capitalize",
     },
-
     popoverCard: {
       position: "absolute",
       top: 80,
