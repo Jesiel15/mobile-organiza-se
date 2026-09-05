@@ -14,6 +14,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  is_admin?: boolean;
 }
 
 interface AuthContextType {
@@ -118,17 +119,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
     });
-  
+
     const { token: userToken, user: userData } = response.data;
-  
+
     await AsyncStorage.setItem("token", userToken);
     await AsyncStorage.setItem("user", JSON.stringify(userData));
-  
+
     setToken(userToken);
     setUser(userData);
     isHandlingUnauthorized.current = false;
   };
-  
+
   const updateUser = async (updatedData: Partial<User>) => {
     if (!user) return;
 

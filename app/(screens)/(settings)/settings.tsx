@@ -5,6 +5,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 import { getSettingsStyles } from "@/styles/settings.styles";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -130,13 +131,27 @@ export default function SettingsScreen() {
           Gerencie suas preferências de conta e aplicativo
         </Text>
 
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={() => setIsSignOutModalOpen(true)}
-        >
-          <Text style={styles.saveButtonText}> Desconectar conta </Text>
-        </TouchableOpacity>
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={() => setIsSignOutModalOpen(true)}
+          >
+            <Text style={styles.saveButtonText}>Desconectar conta</Text>
+          </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.supportButton}
+            onPress={() => router.push("/support")}
+          >
+            <Ionicons
+              name="headset-outline"
+              size={20}
+              color="#FFFFFF"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.supportButtonText}>Suporte</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.sectionTitle}>Aparência</Text>
         <View style={styles.themeOptions}>
           <TouchableOpacity

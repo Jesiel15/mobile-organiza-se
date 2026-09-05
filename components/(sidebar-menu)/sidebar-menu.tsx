@@ -144,7 +144,7 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
                 style={styles.menuItem}
                 onPress={() => setIsSignOutModalOpen(true)}
               >
-                <Ionicons name="warning-outline" size={20} color={colors.red} />
+                <Ionicons name="log-out-outline" size={20} color={colors.red} />
                 <Text style={[styles.menuText, { color: colors.red }]}>
                   Sair
                 </Text>
