@@ -1,17 +1,21 @@
 import Sidebar from "@/components/(sidebar-menu)/sidebar-menu";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
-import { styles } from "@/styles/(components)/support.styles";
+import { getSupportStyles } from "@/styles/support.styles";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
+
+import AlertModal from "@/components/(alert-modal)/alert-modal";
+import ConfirmModal from "@/components/(confirm-modal)/confirm-modal";
 
 interface Message {
   id: number;
@@ -57,7 +61,13 @@ function formatCountdown(ms: number) {
 }
 
 export default function SupportScreen() {
-  const { user } = useAuth();
+  const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  const styles = getSupportStyles(colors, isMobile);
+
+  const { user, signOut } = useAuth();
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -67,14 +77,69 @@ export default function SupportScreen() {
   const [nextAllowedAt, setNextAllowedAt] = useState<Date | null>(null);
   const [now, setNow] = useState(new Date());
 
+  // Controle de Modais de Alerta e Confirmação
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onClose?: () => void;
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+  });
+
+  const [confirmConfig, setConfirmConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => void;
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setAlertConfig({ visible: true, title, message, onClose });
+  };
+
+  const closeAlert = () => {
+    const callback = alertConfig.onClose;
+    setAlertConfig({
+      visible: false,
+      title: "",
+      message: "",
+      onClose: undefined,
+    });
+    if (callback) {
+      setTimeout(() => callback(), 200);
+    }
+  };
+
+  const closeConfirm = () => {
+    setConfirmConfig((prev) => ({ ...prev, visible: false }));
+  };
+
+  const emitSessionExpiredAlert = (msg?: string) => {
+    showAlert(
+      "Sessão expirada",
+      msg || "Sua sessão expirou. Faça login novamente.",
+      () => {
+        signOut();
+      }
+    );
+  };
+
   const fetchTickets = async () => {
     try {
       const response = await api.get("/support/tickets");
       const data: Ticket[] = response.data;
       setTickets(data);
 
-      // Para não-admin: calcula quando pode abrir o próximo chamado
-      // com base no último chamado criado.
       if (!user?.is_admin && data.length > 0) {
         const lastCreatedAt = data.reduce(
           (latest, t) =>
@@ -87,8 +152,12 @@ export default function SupportScreen() {
         );
         setNextAllowedAt(next);
       }
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar os chamados.");
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        emitSessionExpiredAlert();
+      } else {
+        showAlert("Erro", "Não foi possível carregar os chamados.");
+      }
     } finally {
       setFetching(false);
     }
@@ -98,7 +167,6 @@ export default function SupportScreen() {
     fetchTickets();
   }, []);
 
-  // Atualiza o relógio a cada segundo para o timer de 24h
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
@@ -113,28 +181,30 @@ export default function SupportScreen() {
 
   const handleCreateTicket = async () => {
     if (!subject.trim() || !message.trim()) {
-      Alert.alert("Atenção", "Preencha o assunto e a mensagem.");
+      showAlert("Atenção", "Preencha o assunto e a mensagem.");
       return;
     }
 
     setLoading(true);
     try {
       await api.post("/support/tickets", { subject, message });
-      Alert.alert("Sucesso", "Chamado aberto com sucesso!");
+      showAlert("Sucesso", "Chamado aberto com sucesso!");
       setSubject("");
       setMessage("");
       fetchTickets();
     } catch (error: any) {
-      if (error?.response?.status === 429) {
+      if (error?.response?.status === 401) {
+        emitSessionExpiredAlert();
+      } else if (error?.response?.status === 429) {
         const nextAllowed = error.response.data?.next_allowed_at;
         if (nextAllowed) setNextAllowedAt(new Date(nextAllowed));
-        Alert.alert(
+        showAlert(
           "Aguarde",
           error.response.data?.msg ??
             "Você já abriu um chamado nas últimas 24 horas."
         );
       } else {
-        Alert.alert("Erro", "Falha ao abrir chamado.");
+        showAlert("Erro", "Falha ao abrir chamado.");
       }
     } finally {
       setLoading(false);
@@ -149,8 +219,12 @@ export default function SupportScreen() {
       await api.post(`/support/tickets/${ticketId}/reply`, { message: text });
       setReplyText({ ...replyText, [ticketId]: "" });
       fetchTickets();
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível enviar a resposta.");
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        emitSessionExpiredAlert();
+      } else {
+        showAlert("Erro", "Não foi possível enviar a resposta.");
+      }
     }
   };
 
@@ -162,212 +236,256 @@ export default function SupportScreen() {
       await api.patch(`/support/tickets/${ticketId}/status`, { status });
       fetchTickets();
     } catch (error: any) {
-      Alert.alert(
-        "Erro",
-        error?.response?.data?.msg ?? "Não foi possível atualizar o status."
-      );
+      if (error?.response?.status === 401) {
+        emitSessionExpiredAlert();
+      } else {
+        showAlert(
+          "Erro",
+          error?.response?.data?.msg ?? "Não foi possível atualizar o status."
+        );
+      }
     }
   };
 
+  const confirmUpdateStatus = (
+    ticketId: number,
+    status: Ticket["status"],
+    statusName: string
+  ) => {
+    setConfirmConfig({
+      visible: true,
+      title: "Alterar Status",
+      message: `Deseja alterar o status do chamado para "${statusName}"?`,
+      confirmText: "Confirmar",
+      cancelText: "Cancelar",
+      onConfirm: () => {
+        closeConfirm();
+        handleUpdateStatus(ticketId, status);
+      },
+    });
+  };
+
   return (
-    <View style={styles.container}>
-      <Sidebar activeScreen="Suporte" />
+    <>
+      <View style={styles.container}>
+        <Sidebar activeScreen="Suporte" />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.greeting}>Olá, {user?.name}</Text>
-        <Text style={{ marginBottom: 15, color: "#6B7280" }}>
-          {user?.is_admin ? "Painel de Atendimento (ADM)" : "Seus Chamados"}
-        </Text>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Text style={styles.greeting}>Olá,</Text>
+          <Text style={styles.userName}>{user?.name}</Text>
 
-        {/* Formulário de Novo Chamado (Apenas para não-admins) */}
-        {!user?.is_admin && (
-          <View style={styles.formGroup}>
-            <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
-              Novo Chamado
-            </Text>
+          <Text style={styles.sectionTitle}>
+            {user?.is_admin ? "Painel de Atendimento" : "Suporte & Chamados"}
+          </Text>
 
-            {!canCreateTicket && (
-              <Text style={{ color: "#D97706", marginBottom: 8 }}>
-                Você poderá abrir um novo chamado em{" "}
-                {formatCountdown(cooldownRemainingMs)}
-              </Text>
-            )}
+          {!user?.is_admin && (
+            <View style={styles.cardSection}>
+              <Text style={styles.formTitle}>Novo Chamado</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Assunto"
-              value={subject}
-              onChangeText={setSubject}
-              editable={canCreateTicket}
-            />
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Descreva seu problema..."
-              multiline
-              numberOfLines={4}
-              value={message}
-              onChangeText={setMessage}
-              editable={canCreateTicket}
-            />
-            <TouchableOpacity
-              style={[styles.button, !canCreateTicket && { opacity: 0.5 }]}
-              onPress={handleCreateTicket}
-              disabled={loading || !canCreateTicket}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {canCreateTicket
-                    ? "Abrir Chamado"
-                    : "Aguarde para abrir outro"}
+              {!canCreateTicket && (
+                <Text style={styles.cooldownText}>
+                  Você poderá abrir um novo chamado em{" "}
+                  {formatCountdown(cooldownRemainingMs)}
                 </Text>
               )}
-            </TouchableOpacity>
-          </View>
-        )}
 
-        {/* Lista de Chamados */}
-        {fetching ? (
-          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-        ) : (
-          tickets.map((ticket) => {
-            const isClosed = ticket.status === "closed";
-            const canUserClose = !user?.is_admin && !isClosed;
-
-            return (
-              <View
-                key={ticket.id}
-                style={{
-                  padding: 12,
-                  backgroundColor: "#F3F4F6",
-                  borderRadius: 8,
-                  marginVertical: 8,
-                }}
+              <TextInput
+                style={styles.input}
+                placeholder="Assunto"
+                placeholderTextColor={colors.gray}
+                value={subject}
+                onChangeText={setSubject}
+                editable={canCreateTicket}
+              />
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Descreva seu problema..."
+                placeholderTextColor={colors.gray}
+                multiline
+                numberOfLines={4}
+                value={message}
+                onChangeText={setMessage}
+                editable={canCreateTicket}
+              />
+              <TouchableOpacity
+                style={[styles.button, !canCreateTicket && { opacity: 0.5 }]}
+                onPress={handleCreateTicket}
+                disabled={loading || !canCreateTicket}
               >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{ fontWeight: "bold", fontSize: 16, flexShrink: 1 }}
-                  >
-                    {ticket.subject}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: "bold",
-                      color: "#FFFFFF",
-                      backgroundColor: STATUS_COLORS[ticket.status],
-                      paddingHorizontal: 8,
-                      paddingVertical: 3,
-                      borderRadius: 12,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {STATUS_LABELS[ticket.status]}
-                  </Text>
-                </View>
-
-                {user?.is_admin && ticket.user?.email && (
-                  <Text
-                    style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}
-                  >
-                    {ticket.user.email}
+                {loading ? (
+                  <ActivityIndicator color={colors.iconeOutColor} />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    {canCreateTicket
+                      ? "Abrir Chamado"
+                      : "Aguarde para abrir outro"}
                   </Text>
                 )}
+              </TouchableOpacity>
+            </View>
+          )}
 
-                {/* Histórico de Mensagens */}
-                {ticket.messages.map((msg) => (
-                  <View
-                    key={msg.id}
-                    style={{
-                      marginVertical: 4,
-                      padding: 8,
-                      borderRadius: 6,
-                      backgroundColor: msg.is_admin ? "#E0E7FF" : "#FFFFFF",
-                      alignSelf: msg.is_admin ? "flex-start" : "flex-end",
-                      maxWidth: "85%",
-                    }}
-                  >
-                    <Text style={{ fontSize: 10, color: "#4B5563" }}>
-                      {msg.is_admin ? "Suporte" : msg.user?.name}
+          {/* Lista de Chamados */}
+          {fetching ? (
+            <ActivityIndicator
+              size="large"
+              color={colors.primary}
+              style={{ marginTop: 20 }}
+            />
+          ) : (
+            tickets.map((ticket) => {
+              const isClosed = ticket.status === "closed";
+              const canUserClose = !user?.is_admin && !isClosed;
+
+              return (
+                <View key={ticket.id} style={styles.ticketCard}>
+                  <View style={styles.ticketHeader}>
+                    <Text style={styles.ticketSubject}>{ticket.subject}</Text>
+                    <Text
+                      style={[
+                        styles.statusBadge,
+                        { backgroundColor: STATUS_COLORS[ticket.status] },
+                      ]}
+                    >
+                      {STATUS_LABELS[ticket.status]}
                     </Text>
-                    <Text style={{ fontSize: 14 }}>{msg.message}</Text>
                   </View>
-                ))}
 
-                {/* Campo para Responder (só se o chamado não estiver fechado) */}
-                {!isClosed && (
-                  <View style={{ flexDirection: "row", marginTop: 8, gap: 6 }}>
-                    <TextInput
-                      style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                      placeholder="Responder..."
-                      value={replyText[ticket.id] || ""}
-                      onChangeText={(val) =>
-                        setReplyText({ ...replyText, [ticket.id]: val })
-                      }
-                    />
-                    <TouchableOpacity
-                      style={[styles.button, { width: 80 }]}
-                      onPress={() => handleSendReply(ticket.id)}
-                    >
-                      <Text style={styles.buttonText}>Enviar</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-
-                {/* Ações de status */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    flexWrap: "wrap",
-                    gap: 6,
-                    marginTop: 10,
-                  }}
-                >
-                  {user?.is_admin && ticket.status === "open" && (
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#D97706" }]}
-                      onPress={() =>
-                        handleUpdateStatus(ticket.id, "in_progress")
-                      }
-                    >
-                      <Text style={styles.buttonText}>Marcar Em Análise</Text>
-                    </TouchableOpacity>
+                  {user?.is_admin && ticket.user?.email && (
+                    <Text style={styles.userEmailText}>
+                      {ticket.user.email}
+                    </Text>
                   )}
 
-                  {user?.is_admin &&
-                    ticket.status !== "resolved" &&
-                    !isClosed && (
+                  {/* Histórico de Mensagens */}
+                  <View style={styles.messagesContainer}>
+                    {ticket.messages.map((msg) => (
+                      <View
+                        key={msg.id}
+                        style={[
+                          styles.messageBubble,
+                          msg.is_admin
+                            ? styles.adminMessageBubble
+                            : styles.userMessageBubble,
+                        ]}
+                      >
+                        <Text style={styles.messageSender}>
+                          {msg.is_admin ? "Suporte" : msg.user?.name}
+                        </Text>
+                        <Text style={styles.messageText}>{msg.message}</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Responder Chamado */}
+                  {!isClosed && (
+                    <View style={styles.replyContainer}>
+                      <TextInput
+                        style={[styles.input, styles.replyInput]}
+                        placeholder="Responder..."
+                        placeholderTextColor={colors.gray}
+                        value={replyText[ticket.id] || ""}
+                        onChangeText={(val) =>
+                          setReplyText({ ...replyText, [ticket.id]: val })
+                        }
+                      />
                       <TouchableOpacity
-                        style={[styles.button, { backgroundColor: "#059669" }]}
+                        style={[styles.button, styles.replyButton]}
+                        onPress={() => handleSendReply(ticket.id)}
+                      >
+                        <Text style={styles.buttonText}>Enviar</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {/* Ações de Status */}
+                  <View style={styles.actionsContainer}>
+                    {user?.is_admin && ticket.status === "open" && (
+                      <TouchableOpacity
+                        style={[
+                          styles.button,
+                          { backgroundColor: colors.yellow },
+                        ]}
                         onPress={() =>
-                          handleUpdateStatus(ticket.id, "resolved")
+                          confirmUpdateStatus(
+                            ticket.id,
+                            "in_progress",
+                            "Em Análise"
+                          )
                         }
                       >
-                        <Text style={styles.buttonText}>Marcar Resolvido</Text>
+                        <Text
+                          style={[
+                            styles.buttonText,
+                            { color: colors.textColor },
+                          ]}
+                        >
+                          Marcar Em Análise
+                        </Text>
                       </TouchableOpacity>
                     )}
 
-                  {(user?.is_admin || canUserClose) && !isClosed && (
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: "#6B7280" }]}
-                      onPress={() => handleUpdateStatus(ticket.id, "closed")}
-                    >
-                      <Text style={styles.buttonText}>Fechar Chamado</Text>
-                    </TouchableOpacity>
-                  )}
+                    {user?.is_admin &&
+                      ticket.status !== "resolved" &&
+                      !isClosed && (
+                        <TouchableOpacity
+                          style={[
+                            styles.button,
+                            { backgroundColor: colors.green },
+                          ]}
+                          onPress={() =>
+                            confirmUpdateStatus(
+                              ticket.id,
+                              "resolved",
+                              "Resolvido"
+                            )
+                          }
+                        >
+                          <Text style={styles.buttonText}>
+                            Marcar Resolvido
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                    {(user?.is_admin || canUserClose) && !isClosed && (
+                      <TouchableOpacity
+                        style={[
+                          styles.button,
+                          { backgroundColor: colors.gray },
+                        ]}
+                        onPress={() =>
+                          confirmUpdateStatus(ticket.id, "closed", "Fechado")
+                        }
+                      >
+                        <Text style={styles.buttonText}>Fechar Chamado</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
-              </View>
-            );
-          })
-        )}
-      </ScrollView>
-    </View>
+              );
+            })
+          )}
+        </ScrollView>
+      </View>
+
+      {/* Modal de Alerta */}
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={closeAlert}
+      />
+
+      {/* Modal de Confirmação */}
+      <ConfirmModal
+        visible={confirmConfig.visible}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText={confirmConfig.confirmText}
+        cancelText={confirmConfig.cancelText}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={closeConfirm}
+      />
+    </>
   );
 }
