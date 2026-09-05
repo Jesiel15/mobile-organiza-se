@@ -144,7 +144,7 @@ export default function SettingsScreen() {
             onPress={() => router.push("/support")}
           >
             <Ionicons
-              name="headset-outline"
+              name="chatbubbles-outline"
               size={20}
               color="#FFFFFF"
               style={{ marginRight: 8 }}

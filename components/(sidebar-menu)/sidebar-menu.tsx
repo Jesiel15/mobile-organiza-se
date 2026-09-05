@@ -157,7 +157,11 @@ export default function Sidebar({ activeScreen = "Início" }: SidebarProps) {
                 style={styles.menuItem}
                 onPress={() => handleNavigate("support")}
               >
-                <Ionicons name="call-outline" size={20} color={colors.white} />
+                <Ionicons
+                  name="chatbubbles-outline"
+                  size={20}
+                  color={colors.black}
+                />
                 <Text style={styles.menuText}>Suporte</Text>
               </TouchableOpacity>
             </View>
