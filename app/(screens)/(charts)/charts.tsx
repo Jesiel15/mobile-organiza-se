@@ -13,8 +13,14 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { LineChart } from "react-native-chart-kit";
-import Svg, { Circle, Line, Rect, Text as SvgText } from "react-native-svg";
+import Svg, {
+  Circle,
+  Line,
+  Polygon,
+  Polyline,
+  Rect,
+  Text as SvgText,
+} from "react-native-svg";
 
 const MONTHS_SHORT = [
   "Jan",
@@ -155,7 +161,7 @@ function aggregateByMonth<T>(
 
 export default function ChartsScreen() {
   const { colors } = useTheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isMobile = width < 1024;
   const styles = getChartsStyles(colors, isMobile);
 
@@ -197,6 +203,16 @@ export default function ChartsScreen() {
   const [rawRevenues, setRawRevenues] = useState<RawRevenue[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Altura do bloco acima dos gráficos (título + filtro de ano + legenda).
+  // Medida em tempo real via onLayout para que o cálculo da altura dos
+  // gráficos funcione em qualquer tamanho de tela/fonte, sem valores fixos.
+  const [topBlockHeight, setTopBlockHeight] = useState(0);
+
+  // Largura real da área de conteúdo (ao lado da sidebar), medida via
+  // onLayout no próprio ScrollView. Evita chutar a largura da sidebar
+  // (ex: "250") — se a sidebar mudar de tamanho, o cálculo continua certo.
+  const [scrollAreaWidth, setScrollAreaWidth] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -283,115 +299,82 @@ export default function ChartsScreen() {
   // Cálculo de Totais
   const totals = monthlyIncomes.map((inc, idx) => inc - monthlyExpenses[idx]);
 
-  // Preparação de Datasets para o LineChart
-  const activeDatasetsLine: Array<{
-    data: number[];
-    color: (opacity?: number) => string;
-    strokeWidth: number;
-    datasetKey: "expenses" | "incomes" | "total";
-  }> = [];
-
-  if (showExpenses) {
-    activeDatasetsLine.push({
-      data: monthlyExpenses,
-      color: (opacity = 1) => `rgba(229, 62, 62, ${opacity})`,
-      strokeWidth: 2.5,
-      datasetKey: "expenses",
-    });
-  }
-  if (showIncomes) {
-    activeDatasetsLine.push({
-      data: monthlyIncomes,
-      color: (opacity = 1) => `rgba(56, 161, 105, ${opacity})`,
-      strokeWidth: 2.5,
-      datasetKey: "incomes",
-    });
-  }
-  if (showTotal) {
-    activeDatasetsLine.push({
-      data: totals,
-      color: (opacity = 1) => `rgba(49, 130, 206, ${opacity})`,
-      strokeWidth: 2.5,
-      datasetKey: "total",
-    });
-  }
-
-  const lineChartData = {
-    labels: MONTHS_SHORT,
-    datasets:
-      activeDatasetsLine.length > 0
-        ? activeDatasetsLine
-        : [{ data: Array(12).fill(0), color: () => GRID_LINE_COLOR }],
-  };
-
   // Cálculos de dimensão dos cards
-  const sidebarWidth = isMobile ? 0 : 250;
-  const horizontalPadding = isMobile ? 32 : 64;
+  // Precisa bater exatamente com o paddingLeft + paddingRight de
+  // styles.content (charts.styles.ts). Um valor diferente aqui faz os
+  // cards ficarem mais largos que o espaço realmente disponível, empurrando
+  // o card da direita ("Visão em Linhas") para fora da margem da tela.
+  const horizontalPadding = isMobile ? 12 + 12 : 44 + 44;
   const gapWidth = isMobile ? 0 : 20;
-  const availableWidth = width - sidebarWidth - horizontalPadding;
+  // Usa a largura medida do ScrollView (já exclui a sidebar automaticamente,
+  // pois o ScrollView é o irmão flex:1 da Sidebar). Enquanto não mede
+  // (primeiro render = 0), cai no `width` da janela como aproximação inicial.
+  const baseWidth = scrollAreaWidth > 0 ? scrollAreaWidth : width;
+  const availableWidth = baseWidth - horizontalPadding;
   const cardWidth = isMobile ? availableWidth : (availableWidth - gapWidth) / 2;
   const chartWidth = Math.max(cardWidth - 32, 280);
-  const chartHeight = 280;
 
-  const baseChartConfig = {
-    backgroundColor: cardBg,
-    backgroundGradientFrom: cardBg,
-    backgroundGradientTo: cardBg,
-    decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(226, 232, 240, ${opacity})`,
-    labelColor: () => AXIS_LABEL_COLOR,
-    fillShadowGradientOpacity: 0.15,
-    propsForBackgroundLines: {
-      stroke: GRID_LINE_COLOR,
-      strokeDasharray: "4",
-    },
-    propsForDots: {
-      r: "0",
-    },
-    formatYLabel: (y: string) => formatBRL(Number(y)),
-    formatXLabel: (x: string) => x,
-  };
+  // Altura dinâmica do gráfico: em vez de um valor fixo (280), calcula o
+  // espaço vertical que sobrou na tela — mesmo princípio do Calendário, que
+  // estica as linhas da grade até preencher a altura disponível.
+  //   altura da tela
+  // - padding vertical do ScrollView (styles.content)
+  // - bloco medido acima do grid (título + filtro + legenda)
+  // - "moldura" do card (padding do chartCard + título do card)
+  const CONTENT_VERTICAL_PADDING = isMobile ? 64 + 90 : 44 + 44;
+  const CHART_CARD_CHROME = 16 * 2 + 16 + 16; // padding do card + título + margem
+  const MIN_CHART_HEIGHT = 280;
+  const chartHeight = Math.max(
+    height -
+      CONTENT_VERTICAL_PADDING -
+      topBlockHeight -
+      CHART_CARD_CHROME -
+      20, // respiro extra antes do grid
+    MIN_CHART_HEIGHT
+  );
 
-  const handlePointSelect = (
-    index: number,
-    value: number,
-    datasetKey: string,
-    x: number,
-    y: number
-  ) => {
-    const month = MONTHS_SHORT[index];
-    let label = "Valor";
-    let color = "#ffffff";
+  // --- Escala compartilhada entre os dois gráficos (Barras e Linhas) ---
+  // Ambos usam exatamente os mesmos limites/ticks de eixo Y e a mesma
+  // posição X por mês, para que a numeração, as linhas de grade e o
+  // alinhamento dos meses fiquem idênticos nos dois gráficos.
+  const activeSeriesCount =
+    (showExpenses ? 1 : 0) + (showIncomes ? 1 : 0) + (showTotal ? 1 : 0);
 
-    if (datasetKey === "expenses") {
-      label = "Despesas Anuais";
-      color = "#e53e3e";
-    } else if (datasetKey === "incomes") {
-      label = "Receitas Anuais";
-      color = "#38a169";
-    } else if (datasetKey === "total") {
-      label = "Total sobra/falta";
-      color = "#3182ce";
-    }
+  const allValues = [
+    ...(showExpenses ? monthlyExpenses : []),
+    ...(showIncomes ? monthlyIncomes : []),
+    ...(showTotal ? totals : []),
+  ];
+  const rawMax = allValues.length > 0 ? Math.max(...allValues) : 0;
+  const rawMin = allValues.length > 0 ? Math.min(...allValues) : 0;
+  const {
+    min: minVal,
+    max: maxVal,
+    step,
+  } = getNiceAxisBounds(rawMin, rawMax);
+  const valRange = maxVal - minVal;
 
-    setHoveredLinePoint((prev) =>
-      prev && prev.x === x && prev.y === y
-        ? null
-        : {
-            month,
-            value,
-            x,
-            y,
-            color,
-            label,
-          }
-    );
-  };
+  const axisTicks: number[] = [];
+  for (let v = minVal; v <= maxVal + step / 2; v += step) {
+    axisTicks.push(Math.round(v));
+  }
+
+  const CHART_PADDING_LEFT = 46;
+  const CHART_PADDING_TOP = 20;
+  const CHART_PADDING_BOTTOM = 30;
+  const usableWidth = chartWidth - CHART_PADDING_LEFT;
+  const usableHeight = chartHeight - CHART_PADDING_BOTTOM - CHART_PADDING_TOP;
+  const groupWidth = usableWidth / 12;
+
+  const valueToY = (v: number) =>
+    CHART_PADDING_TOP + usableHeight * ((maxVal - v) / valRange);
+  const zeroY = valueToY(0);
+  // Posição X de cada mês (centro da "coluna" do mês) — usada tanto para o
+  // rótulo do mês quanto para os pontos do gráfico de linhas.
+  const monthX = (monthIdx: number) =>
+    CHART_PADDING_LEFT + monthIdx * groupWidth + groupWidth / 2;
 
   const renderGroupedBarChart = () => {
-    const activeSeriesCount =
-      (showExpenses ? 1 : 0) + (showIncomes ? 1 : 0) + (showTotal ? 1 : 0);
-
     if (activeSeriesCount === 0) {
       return (
         <View style={styles.chartCardEmpty}>
@@ -402,37 +385,8 @@ export default function ChartsScreen() {
       );
     }
 
-    const paddingLeft = 46;
-    const paddingBottom = 30;
-    const paddingTop = 20;
-    const usableWidth = chartWidth - paddingLeft;
-    const usableHeight = chartHeight - paddingBottom - paddingTop;
-
-    const allValues = [
-      ...(showExpenses ? monthlyExpenses : []),
-      ...(showIncomes ? monthlyIncomes : []),
-      ...(showTotal ? totals : []),
-    ];
-    const rawMax = allValues.length > 0 ? Math.max(...allValues) : 0;
-    const rawMin = allValues.length > 0 ? Math.min(...allValues) : 0;
-    const {
-      min: minVal,
-      max: maxVal,
-      step,
-    } = getNiceAxisBounds(rawMin, rawMax);
-    const valRange = maxVal - minVal;
-
-    const axisTicks: number[] = [];
-    for (let v = minVal; v <= maxVal + step / 2; v += step) {
-      axisTicks.push(Math.round(v));
-    }
-
-    const groupWidth = usableWidth / 12;
+    const paddingLeft = CHART_PADDING_LEFT;
     const barWidth = Math.min(groupWidth / (activeSeriesCount + 1), 10);
-
-    const zeroY = paddingTop + usableHeight * (maxVal / valRange);
-    const valueToY = (v: number) =>
-      paddingTop + usableHeight * ((maxVal - v) / valRange);
 
     // Handlers de hover (mouse, web) e tap (touch) reaproveitados por barra.
     // `onMouseEnter`/`onMouseLeave` são ignorados silenciosamente no nativo
@@ -648,6 +602,247 @@ export default function ChartsScreen() {
     );
   };
 
+  const renderLineChart = () => {
+    if (activeSeriesCount === 0) {
+      return (
+        <View style={styles.chartCardEmpty}>
+          <Text style={styles.chartCardEmptyText}>
+            Selecione ao menos um dado acima.
+          </Text>
+        </View>
+      );
+    }
+
+    const paddingLeft = CHART_PADDING_LEFT;
+
+    const seriesConfig: Array<{
+      key: string;
+      label: string;
+      color: string;
+      data: number[];
+    }> = [];
+    if (showExpenses) {
+      seriesConfig.push({
+        key: "expenses",
+        label: "Despesas Anuais",
+        color: "#e53e3e",
+        data: monthlyExpenses,
+      });
+    }
+    if (showIncomes) {
+      seriesConfig.push({
+        key: "incomes",
+        label: "Receitas Anuais",
+        color: "#38a169",
+        data: monthlyIncomes,
+      });
+    }
+    if (showTotal) {
+      seriesConfig.push({
+        key: "total",
+        label: "Total sobra/falta",
+        color: "#3182ce",
+        data: totals,
+      });
+    }
+
+    // Handlers de hover (mouse, web) e tap (touch) reaproveitados por ponto.
+    const getPointInteractionProps = (
+      month: string,
+      seriesLabel: string,
+      color: string,
+      value: number,
+      pointX: number,
+      pointY: number
+    ) =>
+      ({
+        onMouseEnter: () =>
+          setHoveredLinePoint({
+            month,
+            label: seriesLabel,
+            color,
+            value,
+            x: pointX,
+            y: pointY,
+          }),
+        onMouseLeave: () => setHoveredLinePoint(null),
+        onPress: () =>
+          setHoveredLinePoint((prev) =>
+            prev && prev.x === pointX && prev.y === pointY
+              ? null
+              : {
+                  month,
+                  label: seriesLabel,
+                  color,
+                  value,
+                  x: pointX,
+                  y: pointY,
+                }
+          ),
+      } as any);
+
+    return (
+      <View style={{ position: "relative" }}>
+        <Svg width={chartWidth} height={chartHeight}>
+          {/* Linhas de Grade + Rótulos do Eixo Y — mesma escala/numeração
+              do gráfico de barras (axisTicks é compartilhado). */}
+          {axisTicks.map((tickVal, i) => {
+            const y = valueToY(tickVal);
+            return (
+              <React.Fragment key={i}>
+                <Line
+                  x1={paddingLeft}
+                  y1={y}
+                  x2={chartWidth}
+                  y2={y}
+                  stroke={GRID_LINE_COLOR}
+                  strokeDasharray="4"
+                  strokeWidth="1"
+                />
+                <SvgText
+                  x={paddingLeft - 8}
+                  y={y + 4}
+                  fill={AXIS_LABEL_COLOR}
+                  fontSize="10"
+                  textAnchor="end"
+                >
+                  {formatAxisNumber(tickVal)}
+                </SvgText>
+              </React.Fragment>
+            );
+          })}
+
+          <Line
+            x1={paddingLeft}
+            y1={zeroY}
+            x2={chartWidth}
+            y2={zeroY}
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1"
+          />
+
+          {/* Rótulos dos meses: mesma posição (monthX) e estilo do
+              gráfico de barras, garantindo o alinhamento embaixo. */}
+          {MONTHS_SHORT.map((label, monthIdx) => (
+            <SvgText
+              key={`month-${monthIdx}`}
+              x={monthX(monthIdx)}
+              y={chartHeight - 8}
+              fill={AXIS_LABEL_COLOR}
+              fontSize="10"
+              textAnchor="middle"
+            >
+              {label}
+            </SvgText>
+          ))}
+
+          {/* Área sombreada abaixo de cada linha (mesmo efeito do gráfico
+              antigo), fechando o polígono na linha do zero (zeroY) */}
+          {seriesConfig.map((series) => {
+            const linePoints = series.data.map(
+              (v, i) => `${monthX(i)},${valueToY(v)}`
+            );
+            const lastIdx = series.data.length - 1;
+            const areaPoints = [
+              ...linePoints,
+              `${monthX(lastIdx)},${zeroY}`,
+              `${monthX(0)},${zeroY}`,
+            ].join(" ");
+            return (
+              <Polygon
+                key={`${series.key}-area`}
+                points={areaPoints}
+                fill={series.color}
+                fillOpacity={0.15}
+                stroke="none"
+              />
+            );
+          })}
+
+          {/* Uma linha (polyline) por série ativa */}
+          {seriesConfig.map((series) => {
+            const points = series.data
+              .map((v, i) => `${monthX(i)},${valueToY(v)}`)
+              .join(" ");
+            return (
+              <Polyline
+                key={series.key}
+                points={points}
+                fill="none"
+                stroke={series.color}
+                strokeWidth="2.5"
+              />
+            );
+          })}
+
+          {/* Pontos de cada série, com hitbox expandida para hover/tap */}
+          {seriesConfig.map((series) =>
+            series.data.map((val, monthIdx) => {
+              const px = monthX(monthIdx);
+              const py = valueToY(val);
+              return (
+                <React.Fragment key={`${series.key}-pt-${monthIdx}`}>
+                  <Circle
+                    cx={px}
+                    cy={py}
+                    r={5}
+                    fill={series.color}
+                    stroke={cardBg}
+                    strokeWidth={2}
+                  />
+                  <Circle
+                    cx={px}
+                    cy={py}
+                    r={22}
+                    fill="transparent"
+                    {...getPointInteractionProps(
+                      MONTHS_SHORT[monthIdx],
+                      series.label,
+                      series.color,
+                      val,
+                      px,
+                      py
+                    )}
+                  />
+                </React.Fragment>
+              );
+            })
+          )}
+        </Svg>
+
+        {hoveredLinePoint && (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.tooltipContainer,
+              {
+                left: Math.min(
+                  Math.max(hoveredLinePoint.x - 70, 4),
+                  chartWidth - 164
+                ),
+                top: Math.max(hoveredLinePoint.y - 65, 4),
+              },
+            ]}
+          >
+            <Text style={styles.tooltipMonth}>{hoveredLinePoint.month}</Text>
+            <View style={styles.tooltipRow}>
+              <View
+                style={[
+                  styles.tooltipSwatch,
+                  { backgroundColor: hoveredLinePoint.color },
+                ]}
+              />
+              <Text style={styles.tooltipText}>
+                {hoveredLinePoint.label}:{" "}
+                {formatBRLPrecise(hoveredLinePoint.value)}
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Sidebar activeScreen="Gráficos" />
@@ -655,16 +850,22 @@ export default function ChartsScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
+        onLayout={(e) => setScrollAreaWidth(e.nativeEvent.layout.width)}
       >
-        <Text style={styles.title}>📊 Gráfico de Despesas e Receitas</Text>
+        <View
+          onLayout={(e) => setTopBlockHeight(e.nativeEvent.layout.height)}
+        >
+          <Text style={styles.title}>📊 Gráfico de Despesas e Receitas</Text>
 
-        {loadError && !isLoadingData && (
-          <Text style={[styles.label, { color: "#e53e3e", marginBottom: 16 }]}>
-            {loadError}
-          </Text>
-        )}
-        {/* Input de Ano */}
-        <View style={styles.filterContainer}>
+          {loadError && !isLoadingData && (
+            <Text
+              style={[styles.label, { color: "#e53e3e", marginBottom: 16 }]}
+            >
+              {loadError}
+            </Text>
+          )}
+          {/* Input de Ano */}
+          <View style={styles.filterContainer}>
           <Text style={styles.label}>Filtrar por Ano</Text>
 
           <View
@@ -798,6 +999,7 @@ export default function ChartsScreen() {
             <Text style={styles.legendText}>Total sobra/falta (R$)</Text>
           </TouchableOpacity>
         </View>
+        </View>
         {/* Grid dos Gráficos Lado a Lado */}
         {!isLoadingData ? (
           <View style={styles.chartsGrid}>
@@ -820,121 +1022,7 @@ export default function ChartsScreen() {
               ]}
             >
               <Text style={styles.chartCardTitle}>Visão em Linhas</Text>
-              {activeDatasetsLine.length > 0 ? (
-                <View style={{ position: "relative" }}>
-                  <LineChart
-                    data={lineChartData}
-                    width={chartWidth}
-                    height={chartHeight}
-                    chartConfig={baseChartConfig}
-                    style={styles.chartStyle}
-                    withInnerLines
-                    withOuterLines={false}
-                    bezier={false}
-                    fromZero
-                    renderDotContent={({ x, y, index, indexData }) => {
-                      const matchedDataset = activeDatasetsLine.find(
-                        (ds) => ds.data[index] === indexData
-                      );
-
-                      if (!matchedDataset) return null;
-
-                      const dotColor = matchedDataset.color(1);
-
-                      return (
-                        <React.Fragment
-                          key={`dot-group-${matchedDataset.datasetKey}-${index}`}
-                        >
-                          {/* Ponto Visível */}
-                          <Circle
-                            cx={x}
-                            cy={y}
-                            r={5}
-                            fill={dotColor}
-                            stroke={cardBg}
-                            strokeWidth={2}
-                          />
-
-                          {/* Hitbox Invisível (Área de toque expandida para mobile e web) */}
-                          <Circle
-                            cx={x}
-                            cy={y}
-                            r={22}
-                            fill="transparent"
-                            onPress={() =>
-                              handlePointSelect(
-                                index,
-                                indexData,
-                                matchedDataset.datasetKey,
-                                x,
-                                y
-                              )
-                            }
-                            {...({
-                              onClick: () =>
-                                handlePointSelect(
-                                  index,
-                                  indexData,
-                                  matchedDataset.datasetKey,
-                                  x,
-                                  y
-                                ),
-                              onMouseEnter: () =>
-                                handlePointSelect(
-                                  index,
-                                  indexData,
-                                  matchedDataset.datasetKey,
-                                  x,
-                                  y
-                                ),
-                              onMouseLeave: () => setHoveredLinePoint(null),
-                              cursor: "pointer",
-                            } as any)}
-                          />
-                        </React.Fragment>
-                      );
-                    }}
-                  />
-
-                  {hoveredLinePoint && (
-                    <View
-                      pointerEvents="none"
-                      style={[
-                        styles.tooltipContainer,
-                        {
-                          left: Math.min(
-                            Math.max(hoveredLinePoint.x - 70, 4),
-                            chartWidth - 164
-                          ),
-                          top: Math.max(hoveredLinePoint.y - 65, 4),
-                        },
-                      ]}
-                    >
-                      <Text style={styles.tooltipMonth}>
-                        {hoveredLinePoint.month}
-                      </Text>
-                      <View style={styles.tooltipRow}>
-                        <View
-                          style={[
-                            styles.tooltipSwatch,
-                            { backgroundColor: hoveredLinePoint.color },
-                          ]}
-                        />
-                        <Text style={styles.tooltipText}>
-                          {hoveredLinePoint.label}:{" "}
-                          {formatBRLPrecise(hoveredLinePoint.value)}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
-                </View>
-              ) : (
-                <View style={styles.chartCardEmpty}>
-                  <Text style={styles.chartCardEmptyText}>
-                    Selecione ao menos um dado acima.
-                  </Text>
-                </View>
-              )}
+              {renderLineChart()}
             </View>
           </View>
         ) : (
