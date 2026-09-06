@@ -44,7 +44,7 @@ export const getSupportStyles = (colors: ThemeColors, isMobile: boolean) =>
     cardSection: {
       borderRadius: 12,
       padding: isMobile ? 14 : 32,
-      borderColor: colors?.surfaceBorder || "#EAECF0",
+      // borderColor: colors?.surfaceBorder || "#EAECF0",
       backgroundColor: colors?.surface || "#FFFFFF",
       maxWidth: 900,
       marginBottom: 24,
@@ -102,7 +102,7 @@ export const getSupportStyles = (colors: ThemeColors, isMobile: boolean) =>
       alignSelf: isMobile ? "stretch" : "flex-start",
     },
     buttonText: {
-      color: "#FFFFFF",
+      color: "buttonOpenTicket",
       fontWeight: "bold",
       fontSize: 15,
     },
@@ -112,8 +112,8 @@ export const getSupportStyles = (colors: ThemeColors, isMobile: boolean) =>
       borderRadius: 12,
       padding: isMobile ? 14 : 24,
       backgroundColor: colors.surface,
-      borderColor: colors.surfaceBorder,
-      borderWidth: 1,
+      // borderColor: colors.surfaceBorder,
+      // borderWidth: 1,
       marginBottom: 16,
       maxWidth: 900,
       boxShadow: [
@@ -141,7 +141,7 @@ export const getSupportStyles = (colors: ThemeColors, isMobile: boolean) =>
     statusBadge: {
       fontSize: 12,
       fontWeight: "bold",
-      color: "#FFFFFF",
+      color: colors.nameStatusBadge,
       paddingHorizontal: 12,
       paddingVertical: 4,
       borderRadius: 12,

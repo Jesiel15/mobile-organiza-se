@@ -12,7 +12,9 @@ export interface ThemeColors {
   outLineInputDate: string;
   buttonLogoutConfig: string;
   calendarBackgroundIcon: string;
-
+  nameStatusBadge: string;
+  buttonOpenTicket: string;
+  
   // Brand colours
   red: string;
   redSuave: string;
@@ -57,7 +59,13 @@ export const lightColors: ThemeColors = {
   outLineInputDate: "#242424",
   buttonLogoutConfig: "#FF7F00",
   calendarBackgroundIcon: "#2881e4",
+  // Cards Ticket
+  nameStatusBadge: "#ffffff",
+  buttonOpenTicket: "#ffffff",
 
+  //FIM: Separando cores
+
+  // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
   purple: "#9da7d0",
@@ -101,6 +109,11 @@ export const darkColors: ThemeColors = {
   outLineInputDate: "#ffffff",
   buttonLogoutConfig: "#FF7F00",
   calendarBackgroundIcon: "#2881e4",
+  // Cards Ticket
+  nameStatusBadge: "#ffffff",
+  buttonOpenTicket: "#ffffff",
+
+  //FIM: Separando cores
 
   // Brand colours
   red: "#e0533d",
@@ -146,7 +159,11 @@ export const blueColors: ThemeColors = {
   outLineInputDate: "#242424",
   buttonLogoutConfig: "#FF7F00",
   calendarBackgroundIcon: "#FF7F00",
+  // Cards Ticket
+  nameStatusBadge: "#ffffff",
+  buttonOpenTicket: "#ffffff",
 
+  //FIM: Separando cores
   // Brand colours
   red: "#e0533d",
   redSuave: "#fecaca",
