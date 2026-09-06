@@ -1,7 +1,7 @@
 import { styles } from "@/styles/register.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -12,9 +12,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import Animated, {
-  FadeInRight
-} from "react-native-reanimated";
+import Animated, { FadeInRight } from "react-native-reanimated";
 import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterScreen() {

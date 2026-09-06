@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   ScrollView,
   Text,
   TextInput,
@@ -22,20 +22,29 @@ export default function SettingsScreen() {
   const isMobile = width < 768;
 
   const { colors, theme, setTheme } = useTheme();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, signOut } = useAuth();
   const styles = getSettingsStyles(colors, isMobile);
 
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
+
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
 
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
-  const { signOut } = useAuth();
+
+  // Estados de feedback inline e loading
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -44,15 +53,30 @@ export default function SettingsScreen() {
     }
   }, [user]);
 
+  const clearMessages = () => {
+    setErrorMessage("");
+    setSuccessMessage("");
+  };
+
+  const validatePassword = (pass: string) => {
+    const letters = pass.match(/[a-zA-Z]/g) || [];
+    const numbers = pass.match(/[0-9]/g) || [];
+
+    return letters.length >= 4 && numbers.length >= 2;
+  };
+
   const handleSave = async () => {
+    clearMessages();
+
     // 1. Atualização apenas do Nome
     if (isEditingName) {
       if (!name.trim()) {
-        Alert.alert("Erro", "O campo Nome não pode ficar vazio.");
+        setErrorMessage("O campo Nome não pode ficar vazio.");
         return;
       }
 
       try {
+        setLoading(true);
         const payload = { name };
         const response = await api.patch("/user/emailname", payload);
         const updatedUser = response.data?.user || payload;
@@ -60,29 +84,37 @@ export default function SettingsScreen() {
         await updateUser(updatedUser);
 
         setIsEditingName(false);
-        Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
+        setSuccessMessage("Perfil atualizado com sucesso!");
       } catch (err: any) {
-        Alert.alert(
-          "Erro",
+        setErrorMessage(
           err.response?.data?.msg || "Erro ao atualizar dados do perfil."
         );
+      } finally {
+        setLoading(false);
       }
     }
 
     // 2. Atualização de Senha
     if (isEditingPassword) {
       if (!password || !newPassword || !confirmPassword) {
-        Alert.alert("Erro", "Preencha todos os campos de senha.");
+        setErrorMessage("Preencha todos os campos de senha.");
         return;
       }
+
       if (newPassword !== confirmPassword) {
-        Alert.alert("Erro", "A nova senha e a confirmação não coincidem.");
+        setErrorMessage("A nova senha e a confirmação não coincidem.");
+        return;
+      }
+
+      if (!validatePassword(newPassword)) {
+        setErrorMessage("A senha deve ter no mínimo 4 letras e 2 números.");
         return;
       }
 
       try {
-        await api.patch("/user/password", {
-          oldPassword: password,
+        setLoading(true);
+        await api.put("/user/password", {
+          password: password,
           newPassword,
         });
 
@@ -91,12 +123,11 @@ export default function SettingsScreen() {
         setConfirmPassword("");
         setIsEditingPassword(false);
 
-        Alert.alert("Sucesso", "Senha alterada com sucesso!");
+        setSuccessMessage("Senha alterada com sucesso!");
       } catch (err: any) {
-        Alert.alert(
-          "Erro",
-          err.response?.data?.msg || "Erro ao alterar a senha."
-        );
+        setErrorMessage(err.response?.data?.msg || "Erro ao alterar a senha.");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -115,8 +146,13 @@ export default function SettingsScreen() {
     setNewPassword("");
     setConfirmPassword("");
 
+    setShowPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+
     setIsEditingName(false);
     setIsEditingPassword(false);
+    clearMessages();
   };
 
   const isAnyFieldEditing = isEditingName || isEditingPassword;
@@ -152,6 +188,7 @@ export default function SettingsScreen() {
             <Text style={styles.supportButtonText}>Suporte</Text>
           </TouchableOpacity>
         </View>
+
         <Text style={styles.sectionTitle}>Aparência</Text>
         <View style={styles.themeOptions}>
           <TouchableOpacity
@@ -237,7 +274,6 @@ export default function SettingsScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          {/* Botão invisível reservando o tamanho exato do espaço */}
           <View
             style={[styles.editIconButton, { opacity: 0 }]}
             pointerEvents="none"
@@ -251,7 +287,10 @@ export default function SettingsScreen() {
           <TextInput
             style={[styles.input, !isEditingName && styles.inputDisabled]}
             value={name}
-            onChangeText={setName}
+            onChangeText={(text) => {
+              setName(text);
+              if (errorMessage || successMessage) clearMessages();
+            }}
             editable={isEditingName}
             pointerEvents={isEditingName ? "auto" : "none"}
             placeholder="Nome do usuário"
@@ -259,7 +298,10 @@ export default function SettingsScreen() {
           />
           <TouchableOpacity
             style={styles.editIconButton}
-            onPress={() => setIsEditingName(!isEditingName)}
+            onPress={() => {
+              setIsEditingName(!isEditingName);
+              clearMessages();
+            }}
           >
             <Ionicons
               name={isEditingName ? "close" : "pencil"}
@@ -269,21 +311,45 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Input Senha */}
+        {/* Input Senha Atual */}
         <View style={styles.inputGroup}>
-          <TextInput
-            style={[styles.input, !isEditingPassword && styles.inputDisabled]}
-            value={password}
-            onChangeText={setPassword}
-            editable={isEditingPassword}
-            pointerEvents={isEditingPassword ? "auto" : "none"}
-            placeholder="Senha atual"
-            placeholderTextColor={colors.gray}
-            secureTextEntry
-          />
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+            <TextInput
+              style={[
+                styles.input,
+                !isEditingPassword && styles.inputDisabled,
+                { flex: 1 },
+              ]}
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (errorMessage || successMessage) clearMessages();
+              }}
+              editable={isEditingPassword}
+              pointerEvents={isEditingPassword ? "auto" : "none"}
+              placeholder="Senha atual"
+              placeholderTextColor={colors.gray}
+              secureTextEntry={!showPassword}
+            />
+            {isEditingPassword && (
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={{ position: "absolute", right: 12 }}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={20}
+                  color={colors.gray}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
           <TouchableOpacity
             style={styles.editIconButton}
-            onPress={() => setIsEditingPassword(!isEditingPassword)}
+            onPress={() => {
+              setIsEditingPassword(!isEditingPassword);
+              clearMessages();
+            }}
           >
             <Ionicons
               name={isEditingPassword ? "close" : "pencil"}
@@ -295,45 +361,133 @@ export default function SettingsScreen() {
 
         {isEditingPassword && (
           <>
+            {/* Input Nova Senha */}
             <View style={styles.inputGroup}>
-              <TextInput
-                style={styles.input}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                placeholder="Nova senha do usuário"
-                placeholderTextColor={colors.gray}
-                secureTextEntry
-              />
+              <View
+                style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+              >
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  value={newPassword}
+                  onChangeText={(text) => {
+                    setNewPassword(text);
+                    if (errorMessage || successMessage) clearMessages();
+                  }}
+                  placeholder="Nova senha do usuário"
+                  placeholderTextColor={colors.gray}
+                  secureTextEntry={!showNewPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowNewPassword(!showNewPassword)}
+                  style={{ position: "absolute", right: 12 }}
+                >
+                  <Ionicons
+                    name={showNewPassword ? "eye-off" : "eye"}
+                    size={20}
+                    color={colors.gray}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
+
+            {/* Input Confirmar Senha */}
             <View style={styles.inputGroup}>
-              <TextInput
-                style={styles.input}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholder="Confirmar senha do usuário"
-                placeholderTextColor={colors.gray}
-                secureTextEntry
-              />
+              <View
+                style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+              >
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  value={confirmPassword}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    if (errorMessage || successMessage) clearMessages();
+                  }}
+                  placeholder="Confirmar senha do usuário"
+                  placeholderTextColor={colors.gray}
+                  secureTextEntry={!showConfirmPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ position: "absolute", right: 12 }}
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? "eye-off" : "eye"}
+                    size={20}
+                    color={colors.gray}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           </>
         )}
 
+        {/* Exibição inline de Mensagem de Erro */}
+        {!!errorMessage && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <Ionicons
+              name="alert-circle-outline"
+              size={16}
+              color="#e0533d"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={{ color: "#e0533d", fontSize: 14 }}>
+              {errorMessage}
+            </Text>
+          </View>
+        )}
+
+        {/* Exibição inline de Mensagem de Sucesso */}
+        {!!successMessage && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={16}
+              color="#4EBA6F"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={{ color: "#4EBA6F", fontSize: 14 }}>
+              {successMessage}
+            </Text>
+          </View>
+        )}
+
         {isAnyFieldEditing && (
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Salvar Alterações</Text>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.saveButtonText}>Salvar Alterações</Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={handleCancel}
+              disabled={loading}
             >
               <Text style={styles.cancelButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
-      {/* Modal de confirmação reutilizável */}
+
       <ConfirmModal
         visible={isSignOutModalOpen}
         title="Desconectar conta"

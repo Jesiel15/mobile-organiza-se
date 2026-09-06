@@ -55,10 +55,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Ignora o auto-logout se o erro 401 for retornado na rota de alteração de senha
+    const isPasswordEndpoint = error.config?.url?.includes("/user/password");
+
+    if (error.response?.status === 401 && !isPasswordEndpoint) {
       const msg = error.response?.data?.msg;
       authEvents.emitUnauthorized(msg);
     }
+
     return Promise.reject(error);
   }
 );
