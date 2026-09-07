@@ -38,6 +38,7 @@ export const getChartsStyles = (colors: ThemeColors, isMobile: boolean) =>
       position: "relative",
       zIndex: 1000,
       marginBottom: 20,
+      overflow: "visible",
     },
     dateInputWrapper: {
       flexDirection: "row",
@@ -85,8 +86,8 @@ export const getChartsStyles = (colors: ThemeColors, isMobile: boolean) =>
       borderRadius: 8,
       padding: 12,
       boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-      elevation: 5,
-      zIndex: 1001,
+      elevation: 50,
+      zIndex: 10000,
     },
     popoverHeader: {
       flexDirection: "row",
@@ -165,6 +166,8 @@ export const getChartsStyles = (colors: ThemeColors, isMobile: boolean) =>
       flexDirection: isMobile ? "column" : "row",
       gap: 20,
       alignItems: "stretch",
+      position: "relative",
+      zIndex: 1,
     },
     chartCard: {
       backgroundColor: colors.surface,
@@ -172,6 +175,8 @@ export const getChartsStyles = (colors: ThemeColors, isMobile: boolean) =>
       padding: 16,
       overflow: "hidden",
       boxShadow: "2px 4px 4px rgba(0, 0, 0, 0.1)",
+      position: "relative",
+      zIndex: 0,
     },
     chartCardTitle: {
       fontSize: 16,

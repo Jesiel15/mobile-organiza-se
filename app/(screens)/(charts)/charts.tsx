@@ -6,10 +6,10 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -325,11 +325,7 @@ export default function ChartsScreen() {
   const CHART_CARD_CHROME = 16 * 2 + 16 + 16; // padding do card + título + margem
   const MIN_CHART_HEIGHT = 280;
   const chartHeight = Math.max(
-    height -
-      CONTENT_VERTICAL_PADDING -
-      topBlockHeight -
-      CHART_CARD_CHROME -
-      20, // respiro extra antes do grid
+    height - CONTENT_VERTICAL_PADDING - topBlockHeight - CHART_CARD_CHROME - 20, // respiro extra antes do grid
     MIN_CHART_HEIGHT
   );
 
@@ -347,11 +343,7 @@ export default function ChartsScreen() {
   ];
   const rawMax = allValues.length > 0 ? Math.max(...allValues) : 0;
   const rawMin = allValues.length > 0 ? Math.min(...allValues) : 0;
-  const {
-    min: minVal,
-    max: maxVal,
-    step,
-  } = getNiceAxisBounds(rawMin, rawMax);
+  const { min: minVal, max: maxVal, step } = getNiceAxisBounds(rawMin, rawMax);
   const valRange = maxVal - minVal;
 
   const axisTicks: number[] = [];
@@ -388,35 +380,77 @@ export default function ChartsScreen() {
     const paddingLeft = CHART_PADDING_LEFT;
     const barWidth = Math.min(groupWidth / (activeSeriesCount + 1), 10);
 
-    // Handlers de hover (mouse, web) e tap (touch) reaproveitados por barra.
-    // `onMouseEnter`/`onMouseLeave` são ignorados silenciosamente no nativo
-    // (iOS/Android) e funcionam normalmente no build web.
-    const getBarInteractionProps = (
-      month: string,
-      seriesLabel: string,
-      color: string,
-      value: number,
-      barX: number,
-      barY: number
-    ) =>
-      ({
-        onMouseEnter: () =>
-          setHoveredBar({
-            month,
-            label: seriesLabel,
-            color,
-            value,
-            x: barX,
-            y: barY,
-          }),
-        onMouseLeave: () => setHoveredBar(null),
-        onPress: () =>
-          setHoveredBar((prev) =>
-            prev && prev.x === barX && prev.y === barY
-              ? null
-              : { month, label: seriesLabel, color, value, x: barX, y: barY }
-          ),
-      } as any);
+    const barHitboxes: Array<{
+      key: string;
+      month: string;
+      label: string;
+      color: string;
+      value: number;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }> = [];
+
+    MONTHS_SHORT.forEach((label, monthIdx) => {
+      const groupStartX =
+        paddingLeft +
+        monthIdx * groupWidth +
+        (groupWidth - activeSeriesCount * barWidth) / 2;
+
+      let currentBarIndex = 0;
+
+      const addBar = (
+        show: boolean,
+        seriesLabel: string,
+        color: string,
+        value: number | undefined,
+        key: string
+      ) => {
+        if (!show) return;
+
+        const safeValue = Number(value) || 0;
+        const barHeight = Math.abs((safeValue / valRange) * usableHeight);
+        const x = groupStartX + currentBarIndex * barWidth;
+        const y = safeValue >= 0 ? zeroY - barHeight : zeroY;
+
+        barHitboxes.push({
+          key,
+          month: label,
+          label: seriesLabel,
+          color,
+          value: safeValue,
+          x,
+          y,
+          width: Math.max(barWidth - 1, 1),
+          height: Math.max(barHeight, 2),
+        });
+
+        currentBarIndex++;
+      };
+
+      addBar(
+        showExpenses,
+        "Despesas Anuais",
+        "#e53e3e",
+        monthlyExpenses[monthIdx],
+        `exp-${monthIdx}`
+      );
+      addBar(
+        showIncomes,
+        "Receitas Anuais",
+        "#38a169",
+        monthlyIncomes[monthIdx],
+        `inc-${monthIdx}`
+      );
+      addBar(
+        showTotal,
+        "Total sobra/falta",
+        "#3182ce",
+        totals[monthIdx],
+        `tot-${monthIdx}`
+      );
+    });
 
     return (
       <View style={{ position: "relative" }}>
@@ -492,18 +526,10 @@ export default function ChartsScreen() {
                         key={`exp-${monthIdx}`}
                         x={x}
                         y={y}
-                        width={barWidth - 1}
+                        width={Math.max(barWidth - 1, 1)}
                         height={Math.max(barHeight, 2)}
                         fill="#e53e3e"
                         rx={1.5}
-                        {...getBarInteractionProps(
-                          label,
-                          "Despesas Anuais",
-                          "#e53e3e",
-                          val,
-                          x,
-                          y
-                        )}
                       />
                     );
                   })()}
@@ -521,18 +547,10 @@ export default function ChartsScreen() {
                         key={`inc-${monthIdx}`}
                         x={x}
                         y={y}
-                        width={barWidth - 1}
+                        width={Math.max(barWidth - 1, 1)}
                         height={Math.max(barHeight, 2)}
                         fill="#38a169"
                         rx={1.5}
-                        {...getBarInteractionProps(
-                          label,
-                          "Receitas Anuais",
-                          "#38a169",
-                          val,
-                          x,
-                          y
-                        )}
                       />
                     );
                   })()}
@@ -550,18 +568,10 @@ export default function ChartsScreen() {
                         key={`tot-${monthIdx}`}
                         x={x}
                         y={y}
-                        width={barWidth - 1}
+                        width={Math.max(barWidth - 1, 1)}
                         height={Math.max(barHeight, 2)}
                         fill="#3182ce"
                         rx={1.5}
-                        {...getBarInteractionProps(
-                          label,
-                          "Total sobra/falta",
-                          "#3182ce",
-                          val,
-                          x,
-                          y
-                        )}
                       />
                     );
                   })()}
@@ -570,12 +580,53 @@ export default function ChartsScreen() {
           })}
         </Svg>
 
+        {barHitboxes.map((bar) => (
+          <Pressable
+            key={`hit-${bar.key}`}
+            onHoverIn={() =>
+              setHoveredBar({
+                month: bar.month,
+                label: bar.label,
+                color: bar.color,
+                value: bar.value,
+                x: bar.x,
+                y: bar.y,
+              })
+            }
+            onHoverOut={() => setHoveredBar(null)}
+            onPress={() =>
+              setHoveredBar((prev) =>
+                prev &&
+                prev.x === bar.x &&
+                prev.y === bar.y &&
+                prev.label === bar.label
+                  ? null
+                  : {
+                      month: bar.month,
+                      label: bar.label,
+                      color: bar.color,
+                      value: bar.value,
+                      x: bar.x,
+                      y: bar.y,
+                    }
+              )
+            }
+            style={{
+              position: "absolute",
+              left: bar.x,
+              top: bar.y,
+              width: bar.width,
+              height: bar.height,
+            }}
+          />
+        ))}
+
         {hoveredBar && (
           <View
-            pointerEvents="none"
             style={[
               styles.tooltipContainer,
               {
+                pointerEvents: "none",
                 left: Math.min(
                   Math.max(hoveredBar.x - 70, 4),
                   chartWidth - 164
@@ -646,40 +697,17 @@ export default function ChartsScreen() {
       });
     }
 
-    // Handlers de hover (mouse, web) e tap (touch) reaproveitados por ponto.
-    const getPointInteractionProps = (
-      month: string,
-      seriesLabel: string,
-      color: string,
-      value: number,
-      pointX: number,
-      pointY: number
-    ) =>
-      ({
-        onMouseEnter: () =>
-          setHoveredLinePoint({
-            month,
-            label: seriesLabel,
-            color,
-            value,
-            x: pointX,
-            y: pointY,
-          }),
-        onMouseLeave: () => setHoveredLinePoint(null),
-        onPress: () =>
-          setHoveredLinePoint((prev) =>
-            prev && prev.x === pointX && prev.y === pointY
-              ? null
-              : {
-                  month,
-                  label: seriesLabel,
-                  color,
-                  value,
-                  x: pointX,
-                  y: pointY,
-                }
-          ),
-      } as any);
+    const pointHitboxes = seriesConfig.flatMap((series) =>
+      series.data.map((val, monthIdx) => ({
+        key: `${series.key}-pt-${monthIdx}`,
+        month: MONTHS_SHORT[monthIdx],
+        label: series.label,
+        color: series.color,
+        value: Number(val) || 0,
+        x: monthX(monthIdx),
+        y: valueToY(Number(val) || 0),
+      }))
+    );
 
     return (
       <View style={{ position: "relative" }}>
@@ -790,32 +818,61 @@ export default function ChartsScreen() {
                     stroke={cardBg}
                     strokeWidth={2}
                   />
-                  <Circle
-                    cx={px}
-                    cy={py}
-                    r={22}
-                    fill="transparent"
-                    {...getPointInteractionProps(
-                      MONTHS_SHORT[monthIdx],
-                      series.label,
-                      series.color,
-                      val,
-                      px,
-                      py
-                    )}
-                  />
+                  <Circle cx={px} cy={py} r={22} fill="transparent" />
                 </React.Fragment>
               );
             })
           )}
         </Svg>
 
+        {pointHitboxes.map((point) => (
+          <Pressable
+            key={`hit-${point.key}`}
+            onHoverIn={() =>
+              setHoveredLinePoint({
+                month: point.month,
+                label: point.label,
+                color: point.color,
+                value: point.value,
+                x: point.x,
+                y: point.y,
+              })
+            }
+            onHoverOut={() => setHoveredLinePoint(null)}
+            onPress={() =>
+              setHoveredLinePoint((prev) =>
+                prev &&
+                prev.x === point.x &&
+                prev.y === point.y &&
+                prev.label === point.label
+                  ? null
+                  : {
+                      month: point.month,
+                      label: point.label,
+                      color: point.color,
+                      value: point.value,
+                      x: point.x,
+                      y: point.y,
+                    }
+              )
+            }
+            style={{
+              position: "absolute",
+              left: point.x - 12,
+              top: point.y - 12,
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+            }}
+          />
+        ))}
+
         {hoveredLinePoint && (
           <View
-            pointerEvents="none"
             style={[
               styles.tooltipContainer,
               {
+                pointerEvents: "none",
                 left: Math.min(
                   Math.max(hoveredLinePoint.x - 70, 4),
                   chartWidth - 164
@@ -854,6 +911,10 @@ export default function ChartsScreen() {
       >
         <View
           onLayout={(e) => setTopBlockHeight(e.nativeEvent.layout.height)}
+          style={{
+            position: "relative",
+            zIndex: 100,
+          }}
         >
           <Text style={styles.title}>📊 Gráfico de Despesas e Receitas</Text>
 
@@ -866,139 +927,138 @@ export default function ChartsScreen() {
           )}
           {/* Input de Ano */}
           <View style={styles.filterContainer}>
-          <Text style={styles.label}>Filtrar por Ano</Text>
+            <Text style={styles.label}>Filtrar por Ano</Text>
 
-          <View
-            style={[
-              styles.dateInputWrapper,
-              isYearFocused && styles.dateInputWrapperFocused,
-            ]}
-          >
-            <TextInput
+            <View
               style={[
-                styles.dateTextInput,
-                {
-                  outlineStyle: "none",
-                  outlineWidth: 0,
-                  outlineColor: "transparent",
-                } as any,
+                styles.dateInputWrapper,
+                isYearFocused && styles.dateInputWrapperFocused,
               ]}
-              value={yearInputText}
-              onChangeText={handleYearInputChange}
-              onFocus={() => setIsYearFocused(true)}
-              onBlur={() => setIsYearFocused(false)}
-              placeholder="AAAA"
-              placeholderTextColor={colors.gray || "#a0aec0"}
-              keyboardType="numeric"
-              maxLength={4}
-              underlineColorAndroid="transparent"
-            />
-
-            <TouchableOpacity
-              style={styles.calendarIconButton}
-              activeOpacity={0.7}
-              onPress={() => setShowYearPicker((prev) => !prev)}
             >
-              <Ionicons name="calendar-outline" size={18} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
+              <TextInput
+                style={[
+                  styles.dateTextInput,
+                  {
+                    outlineStyle: "none",
+                    outlineWidth: 0,
+                    outlineColor: "transparent",
+                  } as any,
+                ]}
+                value={yearInputText}
+                onChangeText={handleYearInputChange}
+                onFocus={() => setIsYearFocused(true)}
+                onBlur={() => setIsYearFocused(false)}
+                placeholder="AAAA"
+                placeholderTextColor={colors.gray || "#a0aec0"}
+                keyboardType="numeric"
+                maxLength={4}
+                underlineColorAndroid="transparent"
+              />
 
-          {showYearPicker && (
-            <View style={styles.popoverCard}>
-              <View style={styles.popoverHeader}>
-                <TouchableOpacity
-                  onPress={() => handleSelectYear(selectedYear - 1)}
-                  style={styles.arrowButton}
-                >
-                  <Ionicons
-                    name="chevron-back"
-                    size={18}
-                    color={colors.textColor}
-                  />
-                </TouchableOpacity>
-
-                <Text style={styles.popoverHeaderTitle}>{selectedYear}</Text>
-
-                <TouchableOpacity
-                  onPress={() => handleSelectYear(selectedYear + 1)}
-                  style={styles.arrowButton}
-                >
-                  <Ionicons
-                    name="chevron-forward"
-                    size={18}
-                    color={colors.textColor}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.pickerGrid}>
-                {getYearsList(selectedYear).map((yr) => {
-                  const isSelected = yr === selectedYear;
-                  return (
-                    <TouchableOpacity
-                      key={yr}
-                      style={[
-                        styles.pickerGridItem,
-                        isSelected && styles.pickerGridItemSelected,
-                      ]}
-                      onPress={() => handleSelectYear(yr)}
-                    >
-                      <Text
-                        style={[
-                          styles.pickerGridText,
-                          isSelected && styles.pickerGridTextSelected,
-                        ]}
-                      >
-                        {yr}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              <Pressable
+                style={styles.calendarIconButton}
+                onPress={() => setShowYearPicker((prev) => !prev)}
+              >
+                <Ionicons name="calendar-outline" size={18} color="#FFFFFF" />
+              </Pressable>
             </View>
-          )}
-        </View>
-        {/* Chips Legenda / Controles */}
-        <View style={styles.legendContainer}>
-          <TouchableOpacity
-            style={styles.legendItem}
-            onPress={() => setShowExpenses(!showExpenses)}
-          >
-            <View
-              style={[
-                styles.legendBadge,
-                { backgroundColor: showExpenses ? "#e53e3e" : "#4a5568" },
-              ]}
-            />
-            <Text style={styles.legendText}>Despesas Anuais (R$)</Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.legendItem}
-            onPress={() => setShowIncomes(!showIncomes)}
-          >
-            <View
-              style={[
-                styles.legendBadge,
-                { backgroundColor: showIncomes ? "#38a169" : "#4a5568" },
-              ]}
-            />
-            <Text style={styles.legendText}>Receitas Anuais (R$)</Text>
-          </TouchableOpacity>
+            {showYearPicker && (
+              <View style={styles.popoverCard}>
+                <View style={styles.popoverHeader}>
+                  <Pressable
+                    onPress={() => handleSelectYear(selectedYear - 1)}
+                    style={styles.arrowButton}
+                  >
+                    <Ionicons
+                      name="chevron-back"
+                      size={18}
+                      color={colors.textColor}
+                    />
+                  </Pressable>
 
-          <TouchableOpacity
-            style={styles.legendItem}
-            onPress={() => setShowTotal(!showTotal)}
-          >
-            <View
-              style={[
-                styles.legendBadge,
-                { backgroundColor: showTotal ? "#3182ce" : "#4a5568" },
-              ]}
-            />
-            <Text style={styles.legendText}>Total sobra/falta (R$)</Text>
-          </TouchableOpacity>
-        </View>
+                  <Text style={styles.popoverHeaderTitle}>{selectedYear}</Text>
+
+                  <Pressable
+                    onPress={() => handleSelectYear(selectedYear + 1)}
+                    style={styles.arrowButton}
+                  >
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color={colors.textColor}
+                    />
+                  </Pressable>
+                </View>
+
+                <View style={styles.pickerGrid}>
+                  {getYearsList(selectedYear).map((yr) => {
+                    const isSelected = yr === selectedYear;
+                    return (
+                      <Pressable
+                        key={yr}
+                        style={[
+                          styles.pickerGridItem,
+                          isSelected && styles.pickerGridItemSelected,
+                        ]}
+                        onPress={() => handleSelectYear(yr)}
+                      >
+                        <Text
+                          style={[
+                            styles.pickerGridText,
+                            isSelected && styles.pickerGridTextSelected,
+                          ]}
+                        >
+                          {yr}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+          </View>
+          {/* Chips Legenda / Controles */}
+          <View style={styles.legendContainer}>
+            <Pressable
+              style={styles.legendItem}
+              onPress={() => setShowExpenses(!showExpenses)}
+            >
+              <View
+                style={[
+                  styles.legendBadge,
+                  { backgroundColor: showExpenses ? "#e53e3e" : "#4a5568" },
+                ]}
+              />
+              <Text style={styles.legendText}>Despesas Anuais (R$)</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.legendItem}
+              onPress={() => setShowIncomes(!showIncomes)}
+            >
+              <View
+                style={[
+                  styles.legendBadge,
+                  { backgroundColor: showIncomes ? "#38a169" : "#4a5568" },
+                ]}
+              />
+              <Text style={styles.legendText}>Receitas Anuais (R$)</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.legendItem}
+              onPress={() => setShowTotal(!showTotal)}
+            >
+              <View
+                style={[
+                  styles.legendBadge,
+                  { backgroundColor: showTotal ? "#3182ce" : "#4a5568" },
+                ]}
+              />
+              <Text style={styles.legendText}>Total sobra/falta (R$)</Text>
+            </Pressable>
+          </View>
         </View>
         {/* Grid dos Gráficos Lado a Lado */}
         {!isLoadingData ? (
