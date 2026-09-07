@@ -12,9 +12,14 @@ export interface ThemeColors {
   outLineInputDate: string;
   buttonLogoutConfig: string;
   calendarBackgroundIcon: string;
+  // Cards Ticket
   nameStatusBadge: string;
   buttonOpenTicket: string;
-  
+
+  // Gráficos
+  gridLineColor: string;
+  axisLabelColor: string;
+
   // Brand colours
   red: string;
   redSuave: string;
@@ -57,11 +62,14 @@ export const lightColors: ThemeColors = {
   checkmark: "#ffffff",
   modalColor: "#ffffff",
   outLineInputDate: "#242424",
-  buttonLogoutConfig: "#FF7F00",
+  buttonLogoutConfig: "#",
   calendarBackgroundIcon: "#2881e4",
   // Cards Ticket
   nameStatusBadge: "#ffffff",
   buttonOpenTicket: "#ffffff",
+  // Gráficos
+  gridLineColor: "#242424",
+  axisLabelColor: "#242424",
 
   //FIM: Separando cores
 
@@ -112,6 +120,9 @@ export const darkColors: ThemeColors = {
   // Cards Ticket
   nameStatusBadge: "#ffffff",
   buttonOpenTicket: "#ffffff",
+  // Gráficos
+  gridLineColor: "#ffffff",
+  axisLabelColor: "#ffffff",
 
   //FIM: Separando cores
 
@@ -162,6 +173,9 @@ export const blueColors: ThemeColors = {
   // Cards Ticket
   nameStatusBadge: "#ffffff",
   buttonOpenTicket: "#ffffff",
+  // Gráficos
+  gridLineColor: "#242424",
+  axisLabelColor: "#242424",
 
   //FIM: Separando cores
   // Brand colours

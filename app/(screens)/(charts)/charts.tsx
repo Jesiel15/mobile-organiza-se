@@ -37,9 +37,6 @@ const MONTHS_SHORT = [
   "Dez",
 ];
 
-const GRID_LINE_COLOR = "rgba(255,255,255,0.08)";
-const AXIS_LABEL_COLOR = "rgba(226,232,240,0.6)";
-
 const formatBRL = (value: number) =>
   `R$ ${Math.round(value).toLocaleString("pt-BR")}`;
 
@@ -465,15 +462,16 @@ export default function ChartsScreen() {
                   y1={y}
                   x2={chartWidth}
                   y2={y}
-                  stroke={GRID_LINE_COLOR}
+                  stroke={colors.gridLineColor}
                   strokeDasharray="4"
                   strokeWidth="1"
                 />
                 <SvgText
                   x={paddingLeft - 8}
                   y={y + 4}
-                  fill={AXIS_LABEL_COLOR}
-                  fontSize="10"
+                  fill={colors.axisLabelColor}
+                  fontSize="14"
+                  fontWeight={"bold"}
                   textAnchor="end"
                 >
                   {formatAxisNumber(tickVal)}
@@ -506,8 +504,9 @@ export default function ChartsScreen() {
                 <SvgText
                   x={paddingLeft + monthIdx * groupWidth + groupWidth / 2}
                   y={chartHeight - 8}
-                  fill={AXIS_LABEL_COLOR}
-                  fontSize="10"
+                  fill={colors.axisLabelColor}
+                  fontSize="14"
+                  fontWeight={"bold"}
                   textAnchor="middle"
                 >
                   {label}
@@ -723,15 +722,16 @@ export default function ChartsScreen() {
                   y1={y}
                   x2={chartWidth}
                   y2={y}
-                  stroke={GRID_LINE_COLOR}
+                  stroke={colors.gridLineColor}
                   strokeDasharray="4"
                   strokeWidth="1"
                 />
                 <SvgText
                   x={paddingLeft - 8}
                   y={y + 4}
-                  fill={AXIS_LABEL_COLOR}
-                  fontSize="10"
+                  fill={colors.axisLabelColor}
+                  fontSize="14"
+                  fontWeight={"bold"}
                   textAnchor="end"
                 >
                   {formatAxisNumber(tickVal)}
@@ -756,8 +756,9 @@ export default function ChartsScreen() {
               key={`month-${monthIdx}`}
               x={monthX(monthIdx)}
               y={chartHeight - 8}
-              fill={AXIS_LABEL_COLOR}
-              fontSize="10"
+              fill={colors.axisLabelColor}
+              fontSize="14"
+              fontWeight={"bold"}
               textAnchor="middle"
             >
               {label}

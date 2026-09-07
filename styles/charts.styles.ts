@@ -179,8 +179,8 @@ export const getChartsStyles = (colors: ThemeColors, isMobile: boolean) =>
       zIndex: 0,
     },
     chartCardTitle: {
-      fontSize: 16,
-      fontWeight: "600",
+      fontSize: 20,
+      fontWeight: "700",
       color: colors.textColor,
       marginBottom: 16,
     },
