@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -491,11 +491,17 @@ export default function TransactionsList({
           isLoading={isLoading}
         />
         {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            style={styles.loader}
-          />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
+            <ActivityIndicator color={colors.primary} />
+            <Text style={styles.label}>Carregando dados...</Text>
+          </View>
         ) : (
           <View style={styles.filterContainer}>
             <Text style={styles.filterLabel}>Filtrar por Mês/Ano</Text>

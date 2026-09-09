@@ -225,6 +225,12 @@ export const getTransactionsStyles = (colors: ThemeColors, isMobile: boolean) =>
       alignItems: "center",
       gap: 8,
     },
+    label: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textColor,
+      marginBottom: 6,
+    },
   });
 
 export default getTransactionsStyles;
