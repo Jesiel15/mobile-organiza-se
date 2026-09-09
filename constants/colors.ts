@@ -62,7 +62,7 @@ export const lightColors: ThemeColors = {
   checkmark: "#ffffff",
   modalColor: "#ffffff",
   outLineInputDate: "#242424",
-  buttonLogoutConfig: "#",
+  buttonLogoutConfig: "#FF7F00",
   calendarBackgroundIcon: "#2881e4",
   // Cards Ticket
   nameStatusBadge: "#ffffff",
