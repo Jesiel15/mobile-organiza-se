@@ -346,7 +346,7 @@ export default function TransactionsList({
     try {
       const monthYear = getMonthYearKey(parseLocalDate(expense.dateExpense));
       await api.post(`/expenses/${monthYear}/${expense.id}/replicate`);
-      await refreshTransactions();
+      // await refreshTransactions();
     } catch (err) {
       console.log("Falha ao replicar despesa", err);
       emitAlertErro(`Falha ao replicar despesa`);
@@ -358,7 +358,7 @@ export default function TransactionsList({
     try {
       const monthYear = getMonthYearKey(parseLocalDate(revenue.dateRevenue));
       await api.post(`/revenues/${monthYear}/${revenue.id}/replicate`);
-      await refreshTransactions();
+      // await refreshTransactions();
     } catch (err) {
       console.log("Falha ao replicar receita", err);
       emitAlertErro(`Falha ao replicar receita`);
