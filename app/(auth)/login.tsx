@@ -1,7 +1,9 @@
 import { styles } from "@/styles/login.styles";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
-import { useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -18,6 +20,31 @@ import {
 import Animated, { FadeInLeft } from "react-native-reanimated";
 import { useAuth } from "../../context/AuthContext";
 
+const REMEMBER_EMAIL_KEY = "remembered_email";
+
+const getSavedItem = async (key: string) => {
+  if (Platform.OS === "web") {
+    return await AsyncStorage.getItem(key);
+  }
+  return await SecureStore.getItemAsync(key);
+};
+
+const setSavedItem = async (key: string, value: string) => {
+  if (Platform.OS === "web") {
+    await AsyncStorage.setItem(key, value);
+  } else {
+    await SecureStore.setItemAsync(key, value);
+  }
+};
+
+const deleteSavedItem = async (key: string) => {
+  if (Platform.OS === "web") {
+    await AsyncStorage.removeItem(key);
+  } else {
+    await SecureStore.deleteItemAsync(key);
+  }
+};
+
 export default function LoginScreen() {
   const { width } = useWindowDimensions();
   const { signIn } = useAuth();
@@ -30,6 +57,23 @@ export default function LoginScreen() {
 
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Carrega o e-mail salvo com segurança ao iniciar a tela
+  useEffect(() => {
+    const loadRememberedEmail = async () => {
+      try {
+        const savedEmail = await getSavedItem(REMEMBER_EMAIL_KEY);
+        if (savedEmail) {
+          setEmail(savedEmail);
+          setLembrar(true);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar e-mail salvo:", error);
+      }
+    };
+
+    loadRememberedEmail();
+  }, []);
+
   const handleLogin = async () => {
     if (!email || !senha) {
       setErrorMessage("Preencha todos os campos.");
@@ -39,6 +83,13 @@ export default function LoginScreen() {
     try {
       setErrorMessage("");
       setLoading(true);
+
+      // Trata a persistência segura do "Lembre-me"
+      if (lembrar) {
+        await setSavedItem(REMEMBER_EMAIL_KEY, email.trim());
+      } else {
+        await deleteSavedItem(REMEMBER_EMAIL_KEY);
+      }
 
       await signIn(email, senha);
 
@@ -71,10 +122,7 @@ export default function LoginScreen() {
         >
           <View style={styles.formPanel}>
             <View style={styles.formInner}>
-              {/* =================================================
-                  LOGO
-              ================================================= */}
-
+              {/* LOGO */}
               <View style={styles.logoContainer}>
                 <Image
                   source={require("../../assets/(images)/logo.png")}
@@ -89,10 +137,7 @@ export default function LoginScreen() {
                 </Text>
               </View>
 
-              {/* =================================================
-                  CARD
-              ================================================= */}
-
+              {/* CARD */}
               <View style={styles.formCard}>
                 <Text style={styles.title}>Bem-vindo!</Text>
 
@@ -101,7 +146,6 @@ export default function LoginScreen() {
                 </Text>
 
                 {/* EMAIL */}
-
                 <TextInput
                   style={styles.input}
                   placeholder="email@email.com"
@@ -113,7 +157,6 @@ export default function LoginScreen() {
                 />
 
                 {/* SENHA */}
-
                 <View style={styles.passwordWrapper}>
                   <TextInput
                     style={styles.passwordInput}
@@ -134,7 +177,6 @@ export default function LoginScreen() {
                 </View>
 
                 {/* ERRO */}
-
                 {!!errorMessage && (
                   <View style={styles.errorContainer}>
                     <Ionicons
@@ -148,7 +190,6 @@ export default function LoginScreen() {
                 )}
 
                 {/* OPÇÕES */}
-
                 <View style={styles.rowBetween}>
                   <Pressable
                     style={styles.checkboxRow}
@@ -170,7 +211,6 @@ export default function LoginScreen() {
                 </View>
 
                 {/* BOTÃO */}
-
                 <TouchableOpacity
                   style={styles.primaryButton}
                   onPress={handleLogin}
@@ -184,7 +224,6 @@ export default function LoginScreen() {
                 </TouchableOpacity>
 
                 {/* CADASTRO */}
-
                 <View style={styles.footerRow}>
                   <Text style={styles.smallText}>Não tem uma conta? </Text>
 
