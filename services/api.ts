@@ -1,21 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import Constants from "expo-constants";
-import { Platform } from "react-native";
 import { authEvents } from "./auth-events";
 
 const getBaseUrl = () => {
-  if (Platform.OS === "web") {
-    return "http://localhost:8000";
-  }
+  // if (Platform.OS === "web") {
+  //   return "http://localhost:8000";
+  // }
 
-  const hostUri = Constants.expoConfig?.hostUri;
-  if (hostUri) {
-    const ip = hostUri.split(":")[0];
-    return `http://${ip}:8000`;
-  }
+  // const hostUri = Constants.expoConfig?.hostUri;
+  // if (hostUri) {
+  //   const ip = hostUri.split(":")[0];
+  //   return `http://${ip}:8000`;
+  // }
 
-  return "http://192.168.101.2:8000";
+  // return "http://192.168.101.2:8000";
+  return "https://api-organizase.vecode.com.br/";
 };
 
 export const api = axios.create({
