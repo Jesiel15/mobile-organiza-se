@@ -5,7 +5,10 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -89,170 +92,183 @@ export default function RegisterScreen() {
       entering={FadeInRight.duration(250)}
       style={styles.container}
     >
-      <View style={styles.formPanel}>
-        <View style={styles.formInner}>
-          {/* =================================================
-              LOGO
-          ================================================= */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.formPanel}>
+            <View style={styles.formInner}>
+              {/* =================================================
+                  LOGO
+              ================================================= */}
 
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("../../assets/(images)/logo.png")}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-
-            <Text style={styles.brandName}>Organiza-se</Text>
-
-            <Text style={styles.subtitle}>
-              Crie sua conta e comece a se organizar.
-            </Text>
-          </View>
-
-          {/* =================================================
-              CARD
-          ================================================= */}
-
-          <View style={styles.formCard}>
-            <Text style={styles.title}>Criar conta</Text>
-
-            <Text style={styles.titleDescription}>
-              Preencha seus dados para começar.
-            </Text>
-
-            {/* NOME */}
-
-            <TextInput
-              style={styles.input}
-              placeholder="Digite seu nome e sobrenome"
-              placeholderTextColor="#8a8a8a"
-              value={nome}
-              onChangeText={(text) => {
-                setNome(text);
-                clearError();
-              }}
-            />
-
-            {/* EMAIL */}
-
-            <TextInput
-              style={styles.input}
-              placeholder="Digite seu email"
-              placeholderTextColor="#8a8a8a"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                clearError();
-              }}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-
-            {/* CONFIRMAÇÃO EMAIL */}
-
-            <TextInput
-              style={styles.input}
-              placeholder="Confirme seu email"
-              placeholderTextColor="#8a8a8a"
-              value={confirmEmail}
-              onChangeText={(text) => {
-                setConfirmEmail(text);
-                clearError();
-              }}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-
-            {/* SENHA */}
-
-            <View style={styles.passwordWrapper}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Digite sua senha"
-                placeholderTextColor="#8a8a8a"
-                value={senha}
-                onChangeText={(text) => {
-                  setSenha(text);
-                  clearError();
-                }}
-                secureTextEntry={!showSenha}
-              />
-
-              <Pressable onPress={() => setShowSenha(!showSenha)}>
-                <Ionicons
-                  name={showSenha ? "eye-off" : "eye"}
-                  size={20}
-                  color="#8a8a8a"
-                />
-              </Pressable>
-            </View>
-
-            {/* CONFIRMAÇÃO SENHA */}
-
-            <View style={styles.passwordWrapper}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Confirme sua senha"
-                placeholderTextColor="#8a8a8a"
-                value={confirmSenha}
-                onChangeText={(text) => {
-                  setConfirmSenha(text);
-                  clearError();
-                }}
-                secureTextEntry={!showConfirmSenha}
-              />
-
-              <Pressable onPress={() => setShowConfirmSenha(!showConfirmSenha)}>
-                <Ionicons
-                  name={showConfirmSenha ? "eye-off" : "eye"}
-                  size={20}
-                  color="#8a8a8a"
-                />
-              </Pressable>
-            </View>
-
-            {/* ERRO */}
-
-            {!!errorMessage && (
-              <View style={styles.errorContainer}>
-                <Ionicons
-                  name="alert-circle-outline"
-                  size={16}
-                  color="#e0533d"
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/(images)/logo.png")}
+                  style={styles.logoImage}
+                  resizeMode="contain"
                 />
 
-                <Text style={styles.errorText}>{errorMessage}</Text>
+                <Text style={styles.brandName}>Organiza-se</Text>
+
+                <Text style={styles.subtitle}>
+                  Crie sua conta e comece a se organizar.
+                </Text>
               </View>
-            )}
 
-            {/* BOTÃO */}
+              {/* =================================================
+                  CARD
+              ================================================= */}
 
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={handleRegister}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.primaryButtonText}>Cadastrar</Text>
-              )}
-            </TouchableOpacity>
+              <View style={styles.formCard}>
+                <Text style={styles.title}>Criar conta</Text>
 
-            {/* LOGIN */}
+                <Text style={styles.titleDescription}>
+                  Preencha seus dados para começar.
+                </Text>
 
-            <View style={styles.footerRow}>
-              <Text style={styles.smallText}>Já tem uma conta? </Text>
+                {/* NOME */}
 
-              <Link href="/(auth)/login" asChild>
-                <TouchableOpacity>
-                  <Text style={styles.link}>Faça o login</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Digite seu nome e sobrenome"
+                  placeholderTextColor="#8a8a8a"
+                  value={nome}
+                  onChangeText={(text) => {
+                    setNome(text);
+                    clearError();
+                  }}
+                />
+
+                {/* EMAIL */}
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Digite seu email"
+                  placeholderTextColor="#8a8a8a"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    clearError();
+                  }}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+
+                {/* CONFIRMAÇÃO EMAIL */}
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirme seu email"
+                  placeholderTextColor="#8a8a8a"
+                  value={confirmEmail}
+                  onChangeText={(text) => {
+                    setConfirmEmail(text);
+                    clearError();
+                  }}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+
+                {/* SENHA */}
+
+                <View style={styles.passwordWrapper}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Digite sua senha"
+                    placeholderTextColor="#8a8a8a"
+                    value={senha}
+                    onChangeText={(text) => {
+                      setSenha(text);
+                      clearError();
+                    }}
+                    secureTextEntry={!showSenha}
+                  />
+
+                  <Pressable onPress={() => setShowSenha(!showSenha)}>
+                    <Ionicons
+                      name={showSenha ? "eye-off" : "eye"}
+                      size={20}
+                      color="#8a8a8a"
+                    />
+                  </Pressable>
+                </View>
+
+                {/* CONFIRMAÇÃO SENHA */}
+
+                <View style={styles.passwordWrapper}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Confirme sua senha"
+                    placeholderTextColor="#8a8a8a"
+                    value={confirmSenha}
+                    onChangeText={(text) => {
+                      setConfirmSenha(text);
+                      clearError();
+                    }}
+                    secureTextEntry={!showConfirmSenha}
+                  />
+
+                  <Pressable
+                    onPress={() => setShowConfirmSenha(!showConfirmSenha)}
+                  >
+                    <Ionicons
+                      name={showConfirmSenha ? "eye-off" : "eye"}
+                      size={20}
+                      color="#8a8a8a"
+                    />
+                  </Pressable>
+                </View>
+
+                {/* ERRO */}
+
+                {!!errorMessage && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons
+                      name="alert-circle-outline"
+                      size={16}
+                      color="#e0533d"
+                    />
+
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                  </View>
+                )}
+
+                {/* BOTÃO */}
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleRegister}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Cadastrar</Text>
+                  )}
                 </TouchableOpacity>
-              </Link>
+
+                {/* LOGIN */}
+
+                <View style={styles.footerRow}>
+                  <Text style={styles.smallText}>Já tem uma conta? </Text>
+
+                  <Link href="/(auth)/login" asChild>
+                    <TouchableOpacity>
+                      <Text style={styles.link}>Faça o login</Text>
+                    </TouchableOpacity>
+                  </Link>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Animated.View>
   );
 }

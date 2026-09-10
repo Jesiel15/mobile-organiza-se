@@ -7,6 +7,11 @@ export const styles = StyleSheet.create({
     backgroundColor: authColors.formBackground,
   },
 
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+
   containerRow: {
     flexDirection: "row",
   },
@@ -206,8 +211,6 @@ export const styles = StyleSheet.create({
 
   // =========================================================
   // PAINEL ANTIGO
-  // Mantido para evitar problemas de referência,
-  // mas não será mais utilizado.
   // =========================================================
 
   illustrationPanel: {

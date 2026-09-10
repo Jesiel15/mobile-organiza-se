@@ -7,6 +7,11 @@ export const styles = StyleSheet.create({
     backgroundColor: authColors.formBackground,
   },
 
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+
   containerRow: {
     flexDirection: "row",
   },

@@ -5,7 +5,10 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -57,131 +60,145 @@ export default function LoginScreen() {
 
   return (
     <Animated.View entering={FadeInLeft.duration(250)} style={styles.container}>
-      <View style={styles.formPanel}>
-        <View style={styles.formInner}>
-          {/* =================================================
-              LOGO
-          ================================================= */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.formPanel}>
+            <View style={styles.formInner}>
+              {/* =================================================
+                  LOGO
+              ================================================= */}
 
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("../../assets/(images)/logo.png")}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-
-            <Text style={styles.brandName}>Organiza-se</Text>
-
-            <Text style={styles.subtitle}>
-              Organize sua vida de forma simples.
-            </Text>
-          </View>
-
-          {/* =================================================
-              CARD
-          ================================================= */}
-
-          <View style={styles.formCard}>
-            <Text style={styles.title}>Bem-vindo!</Text>
-
-            <Text style={styles.titleDescription}>
-              Entre na sua conta para continuar.
-            </Text>
-
-            {/* EMAIL */}
-
-            <TextInput
-              style={styles.input}
-              placeholder="email@email.com"
-              placeholderTextColor="#8a8a8a"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-
-            {/* SENHA */}
-
-            <View style={styles.passwordWrapper}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Senha"
-                placeholderTextColor="#8a8a8a"
-                value={senha}
-                onChangeText={setSenha}
-                secureTextEntry={!showSenha}
-              />
-
-              <Pressable onPress={() => setShowSenha(!showSenha)}>
-                <Ionicons
-                  name={showSenha ? "eye-off" : "eye"}
-                  size={20}
-                  color="#8a8a8a"
-                />
-              </Pressable>
-            </View>
-
-            {/* ERRO */}
-
-            {!!errorMessage && (
-              <View style={styles.errorContainer}>
-                <Ionicons
-                  name="alert-circle-outline"
-                  size={16}
-                  color="#e0533d"
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/(images)/logo.png")}
+                  style={styles.logoImage}
+                  resizeMode="contain"
                 />
 
-                <Text style={styles.errorText}>{errorMessage}</Text>
+                <Text style={styles.brandName}>Organiza-se</Text>
+
+                <Text style={styles.subtitle}>
+                  Organize sua vida de forma simples.
+                </Text>
               </View>
-            )}
 
-            {/* OPÇÕES */}
+              {/* =================================================
+                  CARD
+              ================================================= */}
 
-            <View style={styles.rowBetween}>
-              <Pressable
-                style={styles.checkboxRow}
-                onPress={() => setLembrar(!lembrar)}
-              >
-                <View
-                  style={[styles.checkbox, lembrar && styles.checkboxChecked]}
+              <View style={styles.formCard}>
+                <Text style={styles.title}>Bem-vindo!</Text>
+
+                <Text style={styles.titleDescription}>
+                  Entre na sua conta para continuar.
+                </Text>
+
+                {/* EMAIL */}
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="email@email.com"
+                  placeholderTextColor="#8a8a8a"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
                 />
 
-                <Text style={styles.smallText}>Lembre-me</Text>
-              </Pressable>
+                {/* SENHA */}
 
-              <TouchableOpacity>
-                <Text style={styles.link}>Esqueceu a senha?</Text>
-              </TouchableOpacity>
-            </View>
+                <View style={styles.passwordWrapper}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Senha"
+                    placeholderTextColor="#8a8a8a"
+                    value={senha}
+                    onChangeText={setSenha}
+                    secureTextEntry={!showSenha}
+                  />
 
-            {/* BOTÃO */}
+                  <Pressable onPress={() => setShowSenha(!showSenha)}>
+                    <Ionicons
+                      name={showSenha ? "eye-off" : "eye"}
+                      size={20}
+                      color="#8a8a8a"
+                    />
+                  </Pressable>
+                </View>
 
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.primaryButtonText}>Entrar</Text>
-              )}
-            </TouchableOpacity>
+                {/* ERRO */}
 
-            {/* CADASTRO */}
+                {!!errorMessage && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons
+                      name="alert-circle-outline"
+                      size={16}
+                      color="#e0533d"
+                    />
 
-            <View style={styles.footerRow}>
-              <Text style={styles.smallText}>Não tem uma conta? </Text>
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                  </View>
+                )}
 
-              <Link href="/(auth)/register" asChild>
-                <TouchableOpacity>
-                  <Text style={styles.link}>Cadastre-se</Text>
+                {/* OPÇÕES */}
+
+                <View style={styles.rowBetween}>
+                  <Pressable
+                    style={styles.checkboxRow}
+                    onPress={() => setLembrar(!lembrar)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        lembrar && styles.checkboxChecked,
+                      ]}
+                    />
+
+                    <Text style={styles.smallText}>Lembre-me</Text>
+                  </Pressable>
+
+                  <TouchableOpacity>
+                    <Text style={styles.link}>Esqueceu a senha?</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* BOTÃO */}
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleLogin}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Entrar</Text>
+                  )}
                 </TouchableOpacity>
-              </Link>
+
+                {/* CADASTRO */}
+
+                <View style={styles.footerRow}>
+                  <Text style={styles.smallText}>Não tem uma conta? </Text>
+
+                  <Link href="/(auth)/register" asChild>
+                    <TouchableOpacity>
+                      <Text style={styles.link}>Cadastre-se</Text>
+                    </TouchableOpacity>
+                  </Link>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Animated.View>
   );
 }
